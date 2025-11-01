@@ -85,7 +85,7 @@ pub mod spawn_system {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
-            self.world(@"di")
+            self.world(@"witchcraft")
         }
     }
 }

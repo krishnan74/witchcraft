@@ -2,7 +2,7 @@
   "world": {
     "class_hash": "0x691da17eb9ef169b385eaaf3a303972d187479e30be146d3337423eaec6272d",
     "address": "0x510876811c1ae4530fee91f1425a8890d1c2f1c88571440159efdd7bb3f796f",
-    "seed": "dojo_intro",
+    "seed": "witchcraft",
     "name": "Dojo intro",
     "entrypoints": [
       "uuid",
@@ -1546,11 +1546,11 @@
         {
           "type": "impl",
           "name": "ActionsImpl",
-          "interface_name": "dojo_intro::systems::actions::IActions"
+          "interface_name": "witchcraft::systems::actions::IActions"
         },
         {
           "type": "enum",
-          "name": "dojo_intro::models::Direction",
+          "name": "witchcraft::models::Direction",
           "variants": [
             {
               "name": "Left",
@@ -1572,7 +1572,7 @@
         },
         {
           "type": "interface",
-          "name": "dojo_intro::systems::actions::IActions",
+          "name": "witchcraft::systems::actions::IActions",
           "items": [
             {
               "type": "function",
@@ -1587,7 +1587,7 @@
               "inputs": [
                 {
                   "name": "direction",
-                  "type": "dojo_intro::models::Direction"
+                  "type": "witchcraft::models::Direction"
                 }
               ],
               "outputs": [],
@@ -1701,7 +1701,7 @@
         },
         {
           "type": "event",
-          "name": "dojo_intro::systems::actions::actions::Event",
+          "name": "witchcraft::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1718,14 +1718,9 @@
         }
       ],
       "init_calldata": [],
-      "tag": "di-actions",
+      "tag": "wc-actions",
       "selector": "0x4c09d12108e978b8c073f8d7186ed1aa144777a0aad9d1334532b5813038897",
-      "systems": [
-        "spawn",
-        "move",
-        "move_random",
-        "upgrade"
-      ]
+      "systems": ["spawn", "move", "move_random", "upgrade"]
     }
   ],
   "libraries": [],
@@ -1733,13 +1728,13 @@
     {
       "members": [],
       "class_hash": "0x59aa2d584a078cf0a8f1b9eea6ab4656b2cf98a13c6a54392d09b7cc14ab74c",
-      "tag": "di-Moves",
+      "tag": "wc-Moves",
       "selector": "0xf9b3361ecd0207357b703079e95e035572c2bf2b236611dd97111225abe9f"
     },
     {
       "members": [],
       "class_hash": "0x1fe9f5b2df0d4ae2f4dc055cee47d1099051d64137c6ca6bb7449a83420c80",
-      "tag": "di-Position",
+      "tag": "wc-Position",
       "selector": "0x594a11e54660698f5198d8a38c3f2a691680a4466addfeac08919c3014b5e75"
     }
   ],
