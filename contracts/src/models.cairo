@@ -150,7 +150,7 @@ pub struct WorldState {
 }
 
 
-#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy)]
+#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy, PartialEq)]
 pub enum IngredientType {
     #[default]
     MandrakeRoot,
