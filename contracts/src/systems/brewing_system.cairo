@@ -40,7 +40,9 @@ pub mod brewing_system {
     impl BrewingSystemImpl of IBrewingSystem<ContractState> {
         fn start_brew(ref self: ContractState, cauldron_id: felt252, recipe_id: felt252) {
             let mut world = self.world_default();
-            let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::contract_address_const::<0x1234>();
+
+            // let player_addr = starknet::get_caller_address();
 
             let mut cauldron: Cauldron = world.read_model(cauldron_id);
             let recipe: Recipe = world.read_model(recipe_id);
@@ -123,7 +125,9 @@ pub mod brewing_system {
 
         fn finish_brew(ref self: ContractState, cauldron_id: felt252) {
             let mut world = self.world_default();
-            let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::contract_address_const::<0x1234>();
+
+            // let player_addr = starknet::get_caller_address();
 
             let mut cauldron: Cauldron = world.read_model(cauldron_id);
             let recipe: Recipe = world.read_model(cauldron.recipe_id);
@@ -183,12 +187,12 @@ pub mod brewing_system {
             ref world: dojo::world::WorldStorage
         ) -> Array<RecipeIngredient> {
             let mut arr: Array<RecipeIngredient> = ArrayTrait::new();
-
-            // Example static requirements (replace with actual model queries)
-            let req1 = RecipeIngredient { recipe_id, ingredient_type: IngredientType::BatWing, quantity: 2 };
-            let req2 = RecipeIngredient { recipe_id, ingredient_type: IngredientType::GraveDust, quantity: 1 };
-            arr.append(req1);
-            arr.append(req2);
+            
+            // get the actual requirements from Recipe model
+            let recipe: Recipe = world.read_model(recipe_id);
+            for ingredient in recipe.ingredients {
+                arr.append(ingredient);
+            }
 
             arr
         }

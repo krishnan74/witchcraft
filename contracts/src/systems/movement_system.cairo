@@ -1,13 +1,13 @@
 use crate::models::{Player, Position, Direction, ZoneType};
 
 #[starknet::interface]
-pub trait IMoveSystem<T> {
+pub trait IMovementSystem<T> {
     fn move_player(ref self: T, direction: Direction);
 }
 
 #[dojo::contract]
-pub mod move_system {
-    use super::{IMoveSystem, Player, Position, Direction, ZoneType};
+pub mod movement_system {
+    use super::{IMovementSystem, Player, Position, Direction, ZoneType};
     use dojo::model::ModelStorage;
     use core::num::traits::SaturatingSub;
 
@@ -22,10 +22,11 @@ pub mod move_system {
     // Implementation
 
     #[abi(embed_v0)]
-    impl MoveSystemImpl of IMoveSystem<ContractState> {
+    impl MoveSystemImpl of IMovementSystem<ContractState> {
         fn move_player(ref self: ContractState, direction: Direction) {
             let mut world = self.world_default();
-            let player_addr = starknet::get_caller_address();
+            // let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::contract_address_const::<0x1234>();
 
             // Load player and position
             let mut player: Player = world.read_model(player_addr);
