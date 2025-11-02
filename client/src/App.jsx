@@ -5,6 +5,8 @@ import RecipeBookPopup from './components/RecipeBookPopup'
 import CauldronPopup from './components/CauldronPopup'
 import ShopPopup from './components/ShopPopup'
 import NightBeginsPopup from './components/NightBeginsPopup'
+import SpawnPlayerButton from './components/SpawnPlayerButton'
+import WalletConnect from './components/WalletConnect'
 import { startBrew, finishBrew } from './utils/brewingSystem'
 import { initializeCycle, updateCycle, getTimeRemaining } from './utils/dayNightCycle'
 import { generateCustomerOrders } from './utils/shopSystem'
@@ -14,7 +16,7 @@ import { ShopScene } from './scenes/ShopScene'
 import { ExplorationScene } from './scenes/ExplorationScene'
 import './App.css'
 
-function App() {
+function App({ controller }) {
   const canvasRef = useRef(null)
   const gameEngineRef = useRef(null)
   const sceneManagerRef = useRef(null)
@@ -232,6 +234,16 @@ function App() {
 
   return (
     <div className="app">
+      {/* Wallet Connection */}
+      <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000, maxWidth: '350px' }}>
+        <WalletConnect controller={controller} />
+      </div>
+
+      {/* Dojo Integration Test Button */}
+      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+        <SpawnPlayerButton />
+      </div>
+
       <div className="game-container">
         <GameCanvas ref={canvasRef} />
         <div className="ui-overlay">

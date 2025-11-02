@@ -2,6 +2,14 @@ import { useMemo, useState, useCallback, useEffect, useContext } from 'react'
 import { DojoContext } from '@dojoengine/sdk/react'
 import { AccountInterface } from 'starknet'
 import { dojoConfig } from '../dojoConfig'
+import Controller from '@cartridge/controller'
+
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    cartridgeController?: Controller
+  }
+}
 
 // Type definitions matching Cairo models
 export interface Player {
@@ -90,6 +98,7 @@ export interface UseDojoReturn {
   // Transaction state
   isPending: boolean
   error: Error | null
+  isSdkReady: boolean
   
   // Data queries (will be populated via Torii subscriptions)
   player: Player | null
@@ -126,8 +135,188 @@ export function useDojoHook(): UseDojoReturn {
     throw new Error('useDojoHook must be used within DojoSdkProvider')
   }
 
-  const { sdk, account } = dojoContext
-  const execute = sdk?.execute.bind(sdk)
+  const { sdk, account: dojoAccount } = dojoContext
+  
+  // Get account from Controller if available, otherwise use Dojo context account
+  const controller = (typeof window !== 'undefined' && window.cartridgeController) 
+    ? window.cartridgeController 
+    : null
+  
+  // State to track controller account changes
+  const [controllerAccount, setControllerAccount] = useState(controller?.account || null)
+  
+  // Update controller account when it changes
+  useEffect(() => {
+    if (!controller) return
+    
+    // Check for existing account
+    const checkAccount = () => {
+      const currentAccount = controller.account || null
+      setControllerAccount(prevAccount => {
+        if (currentAccount !== prevAccount) {
+          // Update SDK account when controller account changes
+          if (sdk && currentAccount) {
+            sdk.account = currentAccount
+            console.log('Updated SDK account from Controller:', currentAccount.address)
+          }
+          return currentAccount
+        }
+        return prevAccount
+      })
+    }
+    
+    // Initial check
+    checkAccount()
+    
+    // Poll for account changes (Controller doesn't emit events, so we poll)
+    const interval = setInterval(checkAccount, 500) // Check every 500ms
+    
+    // Also listen for custom event from WalletConnect
+    const handleAccountChange = () => {
+      checkAccount()
+    }
+    window.addEventListener('controller-account-changed', handleAccountChange)
+    
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('controller-account-changed', handleAccountChange)
+    }
+  }, [controller, sdk])
+  
+  const account = controllerAccount || dojoAccount
+  
+  // Check SDK structure and get execute method
+  // SDK might expose execute differently - check multiple possible paths
+  const execute = useMemo(() => {
+    if (!sdk) {
+      console.log('SDK is null')
+      return null
+    }
+    
+    // Debug: log full SDK structure first
+    console.log('Full SDK structure:', {
+      sdkKeys: Object.keys(sdk),
+      sdkType: typeof sdk,
+      sdkValue: sdk
+    })
+    
+    // Try different possible paths for execute
+    if (typeof sdk.execute === 'function') {
+      console.log('Found execute at sdk.execute')
+      return sdk.execute.bind(sdk)
+    }
+    if (sdk.client && typeof sdk.client.execute === 'function') {
+      console.log('Found execute at sdk.client.execute')
+      return sdk.client.execute.bind(sdk.client)
+    }
+    if (sdk.world && typeof sdk.world.execute === 'function') {
+      console.log('Found execute at sdk.world.execute')
+      return sdk.world.execute.bind(sdk.world)
+    }
+    if (sdk.systemCalls && typeof sdk.systemCalls.execute === 'function') {
+      console.log('Found execute at sdk.systemCalls.execute')
+      return sdk.systemCalls.execute.bind(sdk.systemCalls)
+    }
+    
+    // Check if SDK has a different execution pattern
+    // Dojo SDK might use system calls directly
+    console.log('SDK structure details:', {
+      hasExecute: 'execute' in sdk,
+      hasClient: 'client' in sdk,
+      hasWorld: 'world' in sdk,
+      hasSystemCalls: 'systemCalls' in sdk,
+      hasSetup: 'setup' in sdk,
+      clientKeys: sdk.client ? Object.keys(sdk.client) : [],
+      allKeys: Object.keys(sdk)
+    })
+    
+    return null
+  }, [sdk])
+  
+  // Create a wrapper execute function that uses the SDK's actual execution method
+  const executeSystem = useCallback(async (systemName: string, functionName: string, calldata: any[], account: any) => {
+    if (!sdk) {
+      throw new Error('SDK not initialized')
+    }
+    
+    console.log('executeSystem called:', { systemName, functionName, calldata, hasAccount: !!account })
+    
+    // Try different execution patterns
+    if (execute) {
+      console.log('Using execute function')
+      try {
+        return await execute(systemName, functionName, calldata, account)
+      } catch (err) {
+        console.error('Execute function failed, trying alternatives:', err)
+      }
+    }
+    
+    // Check if SDK has setup.systemCalls (common Dojo pattern)
+    if (sdk.setup && sdk.setup.systemCalls) {
+      const systemCalls = sdk.setup.systemCalls
+      console.log('Found systemCalls in setup:', Object.keys(systemCalls))
+      
+      // Try to find the system call function
+      // System names might be in format: "wc-spawn_system" -> lookup spawn
+      const systemKey = systemName.replace('wc-', '').replace('_system', '')
+      const callKey = `${systemKey}_${functionName}`
+      
+      if (typeof systemCalls[callKey] === 'function') {
+        console.log(`Using systemCalls.${callKey}`)
+        return await systemCalls[callKey]({ account, calldata })
+      }
+      
+      // Try just functionName
+      if (typeof systemCalls[functionName] === 'function') {
+        console.log(`Using systemCalls.${functionName}`)
+        return await systemCalls[functionName]({ account, calldata })
+      }
+    }
+    
+    // Alternative: Try direct SDK system calls if available
+    if (sdk.systemCalls && typeof sdk.systemCalls[functionName] === 'function') {
+      console.log(`Using sdk.systemCalls.${functionName}`)
+      const systemCall = sdk.systemCalls[functionName]
+      return await systemCall({ account, calldata })
+    }
+    
+    // Try using client.world.execute if available
+    if (sdk.client?.world?.execute) {
+      console.log('Using sdk.client.world.execute')
+      return await sdk.client.world.execute(systemName, functionName, calldata, account)
+    }
+    
+    // Last resort: Try calling through world directly
+    if (sdk.world && typeof sdk.world.execute === 'function') {
+      console.log('Using sdk.world.execute')
+      return await sdk.world.execute(systemName, functionName, calldata)
+    }
+    
+    console.error('No execute method found. SDK structure:', {
+      sdkKeys: Object.keys(sdk),
+      hasSetup: !!sdk.setup,
+      hasSystemCalls: !!sdk.systemCalls,
+      hasClient: !!sdk.client,
+      hasWorld: !!sdk.world,
+      setupKeys: sdk.setup ? Object.keys(sdk.setup) : []
+    })
+    
+    throw new Error(`No execute method found on SDK for ${systemName}::${functionName}. Check console for SDK structure.`)
+  }, [sdk, execute])
+  
+  // Debug: log SDK readiness
+  useEffect(() => {
+    console.log('SDK Readiness Check:', {
+      hasSdk: !!sdk,
+      hasExecute: !!execute,
+      hasAccount: !!account,
+      accountAddress: account?.address,
+      controllerAccount: controllerAccount?.address,
+      dojoAccount: dojoAccount?.address,
+      isSdkReady: !!sdk && !!account, // Simplified - only check SDK and account
+      executeType: typeof execute
+    })
+  }, [sdk, execute, account, controllerAccount, dojoAccount])
 
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -147,8 +336,11 @@ export function useDojoHook(): UseDojoReturn {
   // System call functions using execute method
   // System names: wc-spawn_system, wc-movement_system, wc-forage_system, wc-brewing_system
   const spawnPlayer = useCallback(async (name: string): Promise<void> => {
-    if (!account || !accountAddress || !execute) {
-      throw new Error('Account not connected or SDK not initialized')
+    if (!account || !accountAddress) {
+      throw new Error('Account not connected')
+    }
+    if (!sdk) {
+      throw new Error('SDK not initialized. Please wait for the SDK to load.')
     }
     
     setIsPending(true)
@@ -157,9 +349,9 @@ export function useDojoHook(): UseDojoReturn {
     try {
       const nameFelt = stringToFelt(name)
       
-      // Execute spawn_player system
+      // Execute spawn_player system using the executeSystem wrapper
       // Using system name from manifest: wc-spawn_system
-      await execute('wc-spawn_system', 'spawn_player', [nameFelt], account)
+      await executeSystem('wc-spawn_system', 'spawn_player', [nameFelt], account)
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       setError(error)
@@ -167,11 +359,14 @@ export function useDojoHook(): UseDojoReturn {
     } finally {
       setIsPending(false)
     }
-  }, [account, accountAddress, execute])
+  }, [account, accountAddress, sdk, executeSystem])
 
   const movePlayer = useCallback(async (direction: Direction): Promise<void> => {
-    if (!account || !accountAddress || !execute) {
-      throw new Error('Account not connected or SDK not initialized')
+    if (!account || !accountAddress) {
+      throw new Error('Account not connected')
+    }
+    if (!sdk) {
+      throw new Error('SDK not initialized. Please wait for the SDK to load.')
     }
     
     setIsPending(true)
@@ -179,7 +374,7 @@ export function useDojoHook(): UseDojoReturn {
     
     try {
       // Execute move_player system with direction enum value
-      await execute('wc-movement_system', 'move_player', [direction], account)
+      await executeSystem('wc-movement_system', 'move_player', [direction], account)
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       setError(error)
@@ -187,11 +382,14 @@ export function useDojoHook(): UseDojoReturn {
     } finally {
       setIsPending(false)
     }
-  }, [account, accountAddress, execute])
+  }, [account, accountAddress, sdk, executeSystem])
 
   const forageAction = useCallback(async (): Promise<void> => {
-    if (!account || !accountAddress || !execute) {
-      throw new Error('Account not connected or SDK not initialized')
+    if (!account || !accountAddress) {
+      throw new Error('Account not connected')
+    }
+    if (!sdk) {
+      throw new Error('SDK not initialized. Please wait for the SDK to load.')
     }
     
     setIsPending(true)
@@ -199,7 +397,7 @@ export function useDojoHook(): UseDojoReturn {
     
     try {
       // Execute forage system (no parameters)
-      await execute('wc-forage_system', 'forage', [], account)
+      await executeSystem('wc-forage_system', 'forage', [], account)
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       setError(error)
@@ -207,11 +405,14 @@ export function useDojoHook(): UseDojoReturn {
     } finally {
       setIsPending(false)
     }
-  }, [account, accountAddress, execute])
+  }, [account, accountAddress, sdk, executeSystem])
 
   const startBrew = useCallback(async (cauldronId: string, recipeId: string): Promise<void> => {
-    if (!account || !accountAddress || !execute) {
-      throw new Error('Account not connected or SDK not initialized')
+    if (!account || !accountAddress) {
+      throw new Error('Account not connected')
+    }
+    if (!sdk) {
+      throw new Error('SDK not initialized. Please wait for the SDK to load.')
     }
     
     setIsPending(true)
@@ -222,7 +423,7 @@ export function useDojoHook(): UseDojoReturn {
       const recipeIdFelt = BigInt(recipeId)
       
       // Execute start_brew system
-      await execute('wc-brewing_system', 'start_brew', [cauldronIdFelt, recipeIdFelt], account)
+      await executeSystem('wc-brewing_system', 'start_brew', [cauldronIdFelt, recipeIdFelt], account)
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       setError(error)
@@ -230,11 +431,14 @@ export function useDojoHook(): UseDojoReturn {
     } finally {
       setIsPending(false)
     }
-  }, [account, accountAddress, execute])
+  }, [account, accountAddress, sdk, executeSystem])
 
   const finishBrew = useCallback(async (cauldronId: string): Promise<void> => {
-    if (!account || !accountAddress || !execute) {
-      throw new Error('Account not connected or SDK not initialized')
+    if (!account || !accountAddress) {
+      throw new Error('Account not connected')
+    }
+    if (!sdk) {
+      throw new Error('SDK not initialized. Please wait for the SDK to load.')
     }
     
     setIsPending(true)
@@ -244,7 +448,7 @@ export function useDojoHook(): UseDojoReturn {
       const cauldronIdFelt = BigInt(cauldronId)
       
       // Execute finish_brew system
-      await execute('wc-brewing_system', 'finish_brew', [cauldronIdFelt], account)
+      await executeSystem('wc-brewing_system', 'finish_brew', [cauldronIdFelt], account)
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       setError(error)
@@ -252,7 +456,7 @@ export function useDojoHook(): UseDojoReturn {
     } finally {
       setIsPending(false)
     }
-  }, [account, accountAddress, execute])
+  }, [account, accountAddress, sdk, executeSystem])
 
   // Fetch data from Torii using SDK's query capabilities
   useEffect(() => {
@@ -304,6 +508,8 @@ export function useDojoHook(): UseDojoReturn {
     finishBrew,
     isPending,
     error,
+    // SDK is ready if we have SDK and account (execute is optional until we actually need it)
+    isSdkReady: !!sdk && !!account,
     player,
     position,
     inventory,

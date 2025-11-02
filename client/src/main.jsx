@@ -9,6 +9,9 @@ import { init } from "@dojoengine/sdk";
 import { DojoSdkProvider } from "@dojoengine/sdk/react";
 import { createDojoConfig } from "@dojoengine/core";
  
+// Cartridge Controller imports
+import Controller from "@cartridge/controller";
+ 
 // Local imports
 import { dojoConfig } from "./dojoConfig.ts";
 import { setupWorld } from "./dojoSetup.ts";
@@ -124,11 +127,29 @@ async function main() {
         hasManifest: !!sdkInitConfig.manifest
     });
     
-    const sdk = await init(sdkInitConfig);
+    // Initialize Cartridge Controller for wallet connection
+    const controller = new Controller({
+        // Configure chains
+        chains: [
+            { rpcUrl: finalRpcUrl },
+        ],
+    });
+    
+    // Initialize the SDK (account will be connected via Controller later)
+    const sdk = await init({
+        ...sdkInitConfig,
+    });
+    
+    // Store controller globally for wallet connection component
+    window.cartridgeController = controller;
  
     createRoot(document.getElementById("root")).render(
-        <DojoSdkProvider sdk={sdk} dojoConfig={config} clientFn={setupWorld}>
-            <App />
+        <DojoSdkProvider 
+            sdk={sdk} 
+            dojoConfig={config} 
+            clientFn={setupWorld}
+        >
+            <App controller={controller} />
         </DojoSdkProvider>
     );
 }
