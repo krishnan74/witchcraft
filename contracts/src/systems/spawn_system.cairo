@@ -53,7 +53,7 @@ pub mod spawn_system {
 
             // Set initial position
             let position = Position {
-                entity: player_addr,
+                owner: player_addr,
                 x: INIT_X,
                 y: INIT_Y,
                 zone: START_ZONE,
@@ -98,7 +98,7 @@ pub mod spawn_system {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
-            self.world(@"witchcraft")
+            self.world(@"wc")
         }
     }
 }

@@ -245,7 +245,7 @@ pub mod brewing_system {
 
 
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
-            self.world(@"witchcraft")
+            self.world(@"wc")
         }
     }
 }

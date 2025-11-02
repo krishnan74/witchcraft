@@ -14,12 +14,13 @@ sierra-replace-ids = true
 starknet = "2.12.2"
 dojo = "1.7.2"
 
+[profile.sepolia]
+
 [tool.scarb]
 allow-prebuilt-plugins = ["dojo_cairo_macros"]
 
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]
-allowed-libfuncs-list.name = "experimental"
 
 [dev-dependencies]
 cairo_test = "2.12.2"

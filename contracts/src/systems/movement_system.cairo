@@ -78,7 +78,7 @@ pub mod movement_system {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
-            self.world(@"witchcraft")
+            self.world(@"wc")
         }
     }
 }

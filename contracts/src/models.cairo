@@ -17,7 +17,7 @@ pub struct Player {
 #[dojo::model]
 pub struct Position {
     #[key]
-    pub entity: ContractAddress,
+    pub owner: ContractAddress,
     pub x: u32,
     pub y: u32,
     pub zone: ZoneType,
