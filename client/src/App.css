@@ -1,0 +1,46 @@
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.game-container {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  border: 2px solid #333;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.ui-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.stats-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 20px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #8b5cf6;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.stat {
+  color: #a78bfa;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
