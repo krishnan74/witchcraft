@@ -1,0 +1,374 @@
+.shop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1002;
+  backdrop-filter: blur(3px);
+}
+
+.shop-popup {
+  background: linear-gradient(135deg, #2a1a3e 0%, #1a1a2e 100%);
+  border: 3px solid #a78bfa;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 50px rgba(167, 139, 250, 0.6);
+  animation: shopOpen 0.4s ease-out;
+  overflow: hidden;
+}
+
+@keyframes shopOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #a78bfa;
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.shop-header h2 {
+  margin: 0;
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 28px;
+  text-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+}
+
+.close-btn {
+  background: transparent;
+  border: 2px solid #a78bfa;
+  color: #c4b5fd;
+  font-size: 32px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: #a78bfa;
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+.time-remaining {
+  padding: 15px 20px;
+  background: rgba(167, 139, 250, 0.1);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-label {
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.time-value {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.recipe-filter {
+  padding: 15px 20px;
+  background: rgba(139, 92, 246, 0.05);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.filter-label {
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  background: rgba(167, 139, 250, 0.1);
+  border: 2px solid rgba(167, 139, 250, 0.3);
+  border-radius: 6px;
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: #a78bfa;
+}
+
+.filter-btn.active {
+  background: rgba(196, 181, 253, 0.3);
+  border-color: #c4b5fd;
+  color: #fff;
+}
+
+.day-recipe {
+  padding: 15px 20px;
+  background: rgba(139, 92, 246, 0.1);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.recipe-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.potion-emoji {
+  font-size: 24px;
+}
+
+.recipe-title span:last-child {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.recipe-hint {
+  color: #a78bfa;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.orders-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.orders-section h3 {
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-item {
+  background: rgba(167, 139, 250, 0.1);
+  border: 2px solid rgba(167, 139, 250, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.order-item:hover {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: #a78bfa;
+}
+
+.order-item.selected {
+  border-color: #c4b5fd;
+  background: rgba(196, 181, 253, 0.2);
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.4);
+}
+
+.order-item.can-fulfill {
+  border-color: #10b981;
+}
+
+.order-item.no-potion {
+  border-color: #ef4444;
+  opacity: 0.7;
+}
+
+.order-faction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 80px;
+}
+
+.faction-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.faction-name {
+  color: #c4b5fd;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-align: center;
+}
+
+.order-details {
+  flex: 1;
+}
+
+.order-recipe {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recipe-emoji {
+  font-size: 16px;
+}
+
+.order-price {
+  color: #fbbf24;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.order-status {
+  display: flex;
+  align-items: center;
+}
+
+.sell-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sell-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.5);
+}
+
+.sell-btn:active {
+  transform: translateY(0);
+}
+
+.no-potion-badge {
+  padding: 8px 15px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 40px 20px;
+  color: #a78bfa;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+}
+
+.fulfilled-section {
+  padding: 15px 20px;
+  background: rgba(16, 185, 129, 0.1);
+  border-top: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.fulfilled-section h4 {
+  color: #10b981;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.total-earnings {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.shop-footer {
+  padding: 15px 20px;
+  border-top: 1px solid rgba(167, 139, 250, 0.3);
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.hint {
+  color: #888;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.hint:last-child {
+  margin-bottom: 0;
+}
+
+/* Scrollbar styling */
+.orders-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orders-section::-webkit-scrollbar-track {
+  background: rgba(167, 139, 250, 0.1);
+  border-radius: 4px;
+}
+
+.orders-section::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.5);
+  border-radius: 4px;
+}
+
+.orders-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.7);
+}
+

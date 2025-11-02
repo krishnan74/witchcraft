@@ -3,8 +3,10 @@
  */
 
 export const GAME_CONFIG = {
-  CANVAS_WIDTH: 1280,
-  CANVAS_HEIGHT: 720,
+  CANVAS_WIDTH: 1920,
+  CANVAS_HEIGHT: 1080,
+  WORLD_WIDTH: 1920,  // Same as canvas width
+  WORLD_HEIGHT: 1080, // Same as canvas height
   TILE_SIZE: 32,
   FPS: 60
 }

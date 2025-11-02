@@ -7,10 +7,13 @@ import { spriteManager } from '../engine/SpriteManager'
 export class ShopScene extends BaseScene {
   async onEnter() {
     console.log('Entered Shop Scene')
-    // Initialize shop scene
+    // Initialize shop scene - update world state to day
     this.setGameState(prev => ({
       ...prev,
-      time: 'day'
+      worldState: {
+        ...prev.worldState,
+        time_of_day: 'Day' // TimeOfDay enum from Dojo
+      }
     }))
 
     // TODO: Load sprite sheets for shop scene
@@ -22,48 +25,46 @@ export class ShopScene extends BaseScene {
   update(deltaTime) {
     super.update(deltaTime)
     
-    // Handle input for shop interactions
-    const engine = this.gameEngine
-    
-    // Press 'E' to switch to exploration mode
-    if (engine.isKeyPressed('KeyE')) {
-      this.sceneManager.changeScene('exploration')
-    }
+    // Shop scene runs during night - don't allow switching manually
+    // Day/night cycle will handle scene switching automatically
   }
 
   render(ctx) {
-    // Draw shop background
-    ctx.fillStyle = '#1a1a2e'
+    // Draw night shop background
+    const gradient = ctx.createLinearGradient(0, 0, 0, this.gameEngine.canvas.height)
+    gradient.addColorStop(0, '#0a0a1a')
+    gradient.addColorStop(1, '#1a0a2e')
+    ctx.fillStyle = gradient
     ctx.fillRect(0, 0, this.gameEngine.canvas.width, this.gameEngine.canvas.height)
 
     // Draw shop title
     ctx.fillStyle = '#a78bfa'
-    ctx.font = '24px monospace'
+    ctx.font = '32px monospace'
     ctx.textAlign = 'center'
-    ctx.fillText('🧪 Witch\'s Shop', this.gameEngine.canvas.width / 2, 50)
+    ctx.fillText('🌙 Night Shop - Open for Business', this.gameEngine.canvas.width / 2, 80)
 
-    // Draw placeholder UI
-    ctx.fillStyle = 'rgba(139, 92, 246, 0.3)'
-    ctx.fillRect(100, 100, 200, 300)
-    ctx.strokeStyle = '#8b5cf6'
-    ctx.lineWidth = 2
-    ctx.strokeRect(100, 100, 200, 300)
+    // Draw decorative elements
+    ctx.fillStyle = 'rgba(167, 139, 250, 0.1)'
+    ctx.fillRect(100, 150, this.gameEngine.canvas.width - 200, this.gameEngine.canvas.height - 300)
+    ctx.strokeStyle = '#a78bfa'
+    ctx.lineWidth = 3
+    ctx.strokeRect(100, 150, this.gameEngine.canvas.width - 200, this.gameEngine.canvas.height - 300)
 
-    ctx.fillStyle = '#fff'
-    ctx.font = '16px monospace'
-    ctx.textAlign = 'left'
-    ctx.fillText('Cauldron Area', 120, 130)
-    ctx.fillText('(Press E to explore)', 120, 150)
+    // Draw instructions
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+    ctx.font = '18px monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText('The shop popup is open - check for customer orders!', this.gameEngine.canvas.width / 2, this.gameEngine.canvas.height / 2)
+    ctx.fillText('Sell potions to fulfill orders and earn gold', this.gameEngine.canvas.width / 2, this.gameEngine.canvas.height / 2 + 40)
 
     // Render entities
     super.render(ctx)
 
-    // Draw instructions
+    // Draw bottom instructions
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
     ctx.font = '14px monospace'
-    ctx.textAlign = 'left'
-    ctx.fillText('Press E - Go to Exploration', 20, this.gameEngine.canvas.height - 40)
-    ctx.fillText('Press B - Open Brewing Menu', 20, this.gameEngine.canvas.height - 20)
+    ctx.textAlign = 'center'
+    ctx.fillText('Press ESC to close shop popup', this.gameEngine.canvas.width / 2, this.gameEngine.canvas.height - 30)
   }
 }
 
