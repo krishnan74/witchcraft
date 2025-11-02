@@ -25,8 +25,7 @@ pub mod movement_system {
     impl MoveSystemImpl of IMovementSystem<ContractState> {
         fn move_player(ref self: ContractState, direction: Direction) {
             let mut world = self.world_default();
-            // let player_addr = starknet::get_caller_address();
-            let player_addr = starknet::contract_address_const::<0x1234>();
+            let player_addr = starknet::get_caller_address();
 
             // Load player and position
             let mut player: Player = world.read_model(player_addr);

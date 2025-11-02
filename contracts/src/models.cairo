@@ -105,7 +105,6 @@ pub struct RecipeIngredient {
     pub quantity: u8,
 }
 
-
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
 pub struct Customer {

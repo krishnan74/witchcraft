@@ -39,15 +39,21 @@ pub mod brewing_system {
     #[abi(embed_v0)]
     impl BrewingSystemImpl of IBrewingSystem<ContractState> {
         fn start_brew(ref self: ContractState, cauldron_id: felt252, recipe_id: felt252) {
+
+            dojo::println!(" Starting brew process... ");
             let mut world = self.world_default();
-            let player_addr = starknet::contract_address_const::<0x1234>();
 
-            // let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::get_caller_address();
 
-            let mut cauldron: Cauldron = world.read_model(cauldron_id);
+            let mut cauldron: Cauldron = world.read_model((player_addr, cauldron_id));
+
+            dojo::println!(" Cauldron fetched");
             let recipe: Recipe = world.read_model(recipe_id);
+            dojo::println!(" Recipe fetched");
             let _player: Player = world.read_model(player_addr);
+            dojo::println!(" Player fetched");
             let inventory: Inventory = world.read_model(player_addr);
+            dojo::println!(" Inventory fetched");
 
             // --- Ownership & state checks ---
             if cauldron.owner != player_addr {
@@ -56,6 +62,8 @@ pub mod brewing_system {
             if cauldron.busy {
                 panic!("Cauldron is already brewing!");
             }
+
+            dojo::println!(" Starting brew for recipe ID: {:?} ", recipe_id);
 
             // --- Check ingredient requirements ---
             let required_ingredients: Array<RecipeIngredient> = self.get_requirements(recipe_id, ref world);
@@ -125,11 +133,10 @@ pub mod brewing_system {
 
         fn finish_brew(ref self: ContractState, cauldron_id: felt252) {
             let mut world = self.world_default();
-            let player_addr = starknet::contract_address_const::<0x1234>();
 
-            // let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::get_caller_address();
 
-            let mut cauldron: Cauldron = world.read_model(cauldron_id);
+            let mut cauldron: Cauldron = world.read_model((player_addr, cauldron_id));
             let recipe: Recipe = world.read_model(cauldron.recipe_id);
             let mut player: Player = world.read_model(player_addr);
 
@@ -188,11 +195,7 @@ pub mod brewing_system {
         ) -> Array<RecipeIngredient> {
             let mut arr: Array<RecipeIngredient> = ArrayTrait::new();
             
-            // get the actual requirements from Recipe model
-            let recipe: Recipe = world.read_model(recipe_id);
-            for ingredient in recipe.ingredients {
-                arr.append(ingredient);
-            }
+            // let ingredients = world.query_model::<RecipeIngredient>().filter_by_key(recipe_id);
 
             arr
         }

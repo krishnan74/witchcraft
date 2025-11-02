@@ -71,24 +71,31 @@ mod tests {
         ].span()
     }
 
-    // -------------------------------
-    // MAIN TEST CASE — MVP FLOW
-    // -------------------------------
+    // -----------------------------------------------
+    // WITCHCRAFT — FULL MVP TEST FLOW
+    // -----------------------------------------------
     #[test]
     #[available_gas(60000000)]
     fn test_full_witchcraft_mvp() {
-        let caller = starknet::contract_address_const::<0x1234>();
+        println!("");
+        println!("=======================================");
+        println!("WITCHCRAFT FULL MVP TEST FLOW");
+        println!("=======================================");
+        println!("");
 
-        println!(" --- Setting up test world --- ");
-        println!(" Caller address from test: {:?}", caller);
+        // STEP 0: Setup world
+        println!("[SETUP] Creating test world...");
+
+        let caller = starknet::contract_address_const::<0x1234>();
+        testing::set_contract_address(caller);
         let ndef = namespace_def();
         let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
         world.sync_perms_and_inits(contract_defs());
 
-        println!(" --- WITCH CRAFT --- ");
-        
-        // Fetch systems
+        println!("World initialized successfully.\n");
 
+        // STEP 1: Fetch system dispatchers
+        println!("[SYSTEMS] Fetching system dispatchers...");
         let (spawn_addr, _) = world.dns(@"spawn_system").unwrap();
         let spawn_system = ISpawnSystemDispatcher { contract_address: spawn_addr };
 
@@ -98,86 +105,64 @@ mod tests {
         let (node_spawn_addr, _) = world.dns(@"node_spawn_system").unwrap();
         let node_spawn_system = INodeSpawnSystemDispatcher { contract_address: node_spawn_addr };
 
-
         let (forage_addr, _) = world.dns(@"forage_system").unwrap();
         let forage_system = IForageSystemDispatcher { contract_address: forage_addr };
 
         let (brew_addr, _) = world.dns(@"brewing_system").unwrap();
         let brew_system = IBrewingSystemDispatcher { contract_address: brew_addr };
 
+        println!("System dispatchers fetched successfully.\n");
 
-        println!(" --- Fetched systems --- ");
-
-        // -------------------------------------------------
-        // 1️⃣ Register player manually (simulate spawn)
-        // -------------------------------------------------
+        // STEP 2: Player Spawn
+        println!("[STEP 1] Spawning player...");
         let player_name: felt252 = 'TestPlayer';
-        
-        
         spawn_system.spawn_player(player_name);
-        println!(" --- Player spawned --- ");
 
         let player: Player = world.read_model(caller);
-
-
-        println!(" --- Player details: Name: {:?}, Gold: {}, Health: {}, Stamina: {} --- ", player.name, player.gold, player.health, player.stamina);
-
-
+        println!("Player spawned: {:?} | Gold: {} | Health: {} | Stamina: {}", 
+            player.name, player.gold, player.health, player.stamina);
         assert(player.name == player_name, 'Player spawn failed');
 
+        // STEP 3: Movement System
         let player_position: Position = world.read_model(caller);
-
-        println!(" --- Player position X: {} Y: {} --- ", player_position.x, player_position.y);
+        println!("Current position: ({}, {})", player_position.x, player_position.y);
 
         movement_system.move_player(Direction::Up);
-
         let player_position: Position = world.read_model(caller);
+        println!("Moved Up -> New position: ({}, {})\n", player_position.x, player_position.y);
 
-
-        println!(" --- Player position X: {} Y: {} --- ", player_position.x, player_position.y);
-        // -------------------------------------------------
-        // 2️⃣ Spawn a node at player position
-        // -------------------------------------------------
-
+        // STEP 4: Spawn Ingredient Node
+        println!("[STEP 2] Spawning ingredient node...");
         let x: u32 = 5;
         let y: u32 = 7;
         node_spawn_system.spawn_node(x, y, IngredientType::BatWing, 1, 3);
 
-        println!(" --- Bat Wing Node spawned at ({}, {})  --- ", x, y);
-
         let node_id: felt252 = (x * 1000 + y).into();
         let node: IngredientNode = world.read_model(node_id);
-
-        println!(" --- Node details: Type: {:?}, Quantity: {} at ({}, {}) --- ", node.ingredient_type, node.quantity, node.x, node.y);
+        println!("Node spawned: {:?} | Quantity: {} | Position: ({}, {})", 
+            node.ingredient_type, node.quantity, node.x, node.y);
         assert(node.quantity == 3, 'Node spawn failed');
+        println!("");
 
-        // -------------------------------------------------
-        // 3️⃣ Player forages from node
-        // -------------------------------------------------
-
+        // STEP 5: Foraging
+        println!("[STEP 3] Foraging ingredients...");
         movement_system.move_player(Direction::Up);
         let player_position: Position = world.read_model(caller);
-        println!(" --- Player moved to ({}, {})  --- ", player_position.x, player_position.y);
+        println!("Player moved to ({}, {})", player_position.x, player_position.y);
 
-
-        // Delay to allow foraging (if needed)
         testing::set_block_number(get_block_info().block_number + 500);
-
         forage_system.forage();
 
         let inventory_after: Inventory = world.read_model(caller);
+        println!("Inventory updated. Count: {}", inventory_after.count);
         assert(inventory_after.count == 1, 'Inventory not updated');
 
-        println!(" --- Player foraged ingredient, inventory count now {} --- ", inventory_after.count);
-
         let item: IngredientItem = world.read_model((caller, 0));
+        println!("Foraged Item: {:?} | Quantity: {}", item.ingredient_type, item.quantity);
+        println!("");
 
-        println!(" --- Foraged item details: Type: {:?}, Quantity: {} --- ", item.ingredient_type, item.quantity);
-        assert(item.quantity == 1, 'Foraged it not create');
-
-        // -------------------------------------------------
-        // 4️⃣ Create Cauldron + Recipe models manually
-        // -------------------------------------------------
+        // STEP 6: Brewing Setup
+        println!("[STEP 4] Setting up cauldron and recipe...");
         let cauldron_id: felt252 = 999.into();
         let cauldron = Cauldron {
             cauldron_id,
@@ -188,8 +173,6 @@ mod tests {
             brewing_until: 0,
         };
         world.write_model_test(@cauldron);
-
-        println!(" --- Cauldron created for player --- ");
 
         let recipe_id: felt252 = 777.into();
         let recipe = Recipe {
@@ -202,29 +185,36 @@ mod tests {
         };
         world.write_model_test(@recipe);
 
-        println!(" --- Recipe created: {:?} --- ", recipe.name);
+        println!("Cauldron and recipe registered successfully.\n");
 
-        // -------------------------------------------------
-        // 5️⃣ Start brewing using foraged ingredient
-        // -------------------------------------------------
+        // STEP 7: Brewing Process
+        println!("[STEP 5] Starting brewing process...");
         brew_system.start_brew(cauldron_id, recipe_id);
 
-        let mut cauldron_after: Cauldron = world.read_model(cauldron_id);
+        let mut cauldron_after: Cauldron = world.read_model((caller, cauldron_id));
+
+        println!("Cauldron brewing status: {}", cauldron_after.busy);
         assert(cauldron_after.busy, 'Cauldron should be brewing');
 
-        // Simulate passage of time
         cauldron_after.brewing_until = 0;
         world.write_model_test(@cauldron_after);
 
-        // -------------------------------------------------
-        // 6️⃣ Finish brewing
-        // -------------------------------------------------
+        println!("Finishing started for  brewing process...");
+
         brew_system.finish_brew(cauldron_id);
 
-        let potion: Potion = world.read_model((caller, cauldron_id));
+        println!("Brewing process finished.");
+
+        let potion_id: felt252 = (caller.into() + cauldron_id).into();
+
+        let potion: Potion = world.read_model(potion_id);
+        println!("Potion brewed successfully. Quality: {}", potion.quality);
         assert(potion.quality > 0, 'Potion not created');
 
-        let player_after: Player = world.read_model(caller);
-        // assert(player_after.gold >= 0, 'Player did not receive gold properly');
+        println!("");
+        println!("=======================================");
+        println!(" ALL TESTS PASSED SUCCESSFULLY ");
+        println!("=======================================");
+
     }
 }

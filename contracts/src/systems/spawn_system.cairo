@@ -28,10 +28,9 @@ pub mod spawn_system {
     impl SpawnSystemImpl of ISpawnSystem<ContractState> {
         fn spawn_player(ref self: ContractState, name: felt252) {
             let mut world = self.world_default();
-            let player_addr = starknet::contract_address_const::<0x1234>();
-            // let player_addr = starknet::get_caller_address();
+            let player_addr = starknet::get_caller_address();
 
-        println!(" Caller address from SpawnSystem: {:?}", player_addr);
+            println!(" Caller address from SpawnSystem: {:?}", player_addr);
 
             // // Prevent duplicate spawns
             // if world.has::<Player>(player_addr) {
