@@ -27,13 +27,16 @@ pub struct Position {
 #[dojo::model]
 pub struct IngredientNode {
     #[key]
-    pub node_id: felt252,
+    pub node_id: felt252,             // unique identifier (derived from position or generated)
     pub ingredient_type: IngredientType,
     pub rarity: u8,
     pub respawn_epoch: u64,
     pub x: u32,
     pub y: u32,
+    pub quantity: u16,                // number of times it can be foraged before depletion
+    pub active: bool,                 // true = node is valid and collectible
 }
+
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
@@ -147,7 +150,7 @@ pub struct WorldState {
 }
 
 
-#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy)]
+#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy, Debug, PartialEq)]
 pub enum IngredientType {
     #[default]
     MandrakeRoot,
