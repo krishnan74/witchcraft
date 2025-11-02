@@ -127,12 +127,46 @@ async function main() {
         hasManifest: !!sdkInitConfig.manifest
     });
     
-    // Initialize Cartridge Controller for wallet connection
+    // Build Controller policies from manifest (we already have manifest loaded)
+    const policies = {
+        contracts: {},
+    };
+    
+    if (manifest && manifest.contracts) {
+        // Configure policies for each system contract
+        const systemContracts = [
+            { tag: 'wc-spawn_system', name: 'Spawn System', description: 'Player spawning system', entrypoints: ['spawn_player'] },
+            { tag: 'wc-movement_system', name: 'Movement System', description: 'Player movement system', entrypoints: ['move_player'] },
+            { tag: 'wc-forage_system', name: 'Forage System', description: 'Ingredient foraging system', entrypoints: ['forage'] },
+            { tag: 'wc-brewing_system', name: 'Brewing System', description: 'Potion brewing system', entrypoints: ['start_brew', 'finish_brew'] },
+        ];
+        
+        systemContracts.forEach(({ tag, name, description, entrypoints }) => {
+            const contract = manifest.contracts.find((c) => c.tag === tag);
+            if (contract) {
+                policies.contracts[contract.address] = {
+                    name: name,
+                    description: description,
+                    methods: entrypoints.map((entrypoint) => ({
+                        name: entrypoint.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+                        entrypoint: entrypoint,
+                        description: `${description} - ${entrypoint}`,
+                    })),
+                };
+            }
+        });
+        
+        console.log('Controller policies configured for contracts:', Object.keys(policies.contracts));
+    }
+    
+    // Initialize Cartridge Controller for wallet connection with policies
     const controller = new Controller({
         // Configure chains
         chains: [
             { rpcUrl: finalRpcUrl },
         ],
+        // Add policies for secure transaction approvals
+        ...(Object.keys(policies.contracts).length > 0 && { policies }),
     });
     
     // Initialize the SDK (account will be connected via Controller later)

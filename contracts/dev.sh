@@ -92,6 +92,14 @@ sozo migrate --profile dev
 WORLD_ADDRESS=$(grep -o '"address": "0x[^"]*"' "$SCRIPT_DIR/manifest_dev.json" | head -1 | cut -d'"' -f4)
 echo -e "${GREEN}World deployed at: $WORLD_ADDRESS${NC}"
 
+# Copy updated manifest to client public directory
+if [ -d "$SCRIPT_DIR/../client/public" ]; then
+    cp "$SCRIPT_DIR/manifest_dev.json" "$SCRIPT_DIR/../client/public/manifest_dev.json"
+    echo -e "${GREEN}✓ Manifest copied to client/public/${NC}"
+else
+    echo -e "${YELLOW}Warning: client/public directory not found, manifest not copied${NC}"
+fi
+
 # Step 4: Start Torii with command-line arguments
 echo -e "\n${YELLOW}Step 4: Starting Torii with command-line arguments...${NC}"
 torii --world "$WORLD_ADDRESS" --rpc http://localhost:5050 --http.cors_origins "*" > /tmp/torii.log 2>&1 &
