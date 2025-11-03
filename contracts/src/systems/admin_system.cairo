@@ -61,9 +61,11 @@ pub mod admin_system {
             let mut entity_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
 
             // Check if entity already exists (retry if collision)
+            // In Dojo, non-existent models return default values (id = 0)
+            // So if existing.id != 0, it means an entity already exists
             let mut existing: CombatEntity = world.read_model(entity_id);
             let mut attempts: u8 = 0;
-            while existing.id == entity_id && existing.id != 0 && attempts < 10 {
+            while existing.id != 0 && attempts < 10 {
                 // If collision, add a small increment
                 entity_id = entity_id + (attempts + 1).into();
                 existing = world.read_model(entity_id);
@@ -72,7 +74,7 @@ pub mod admin_system {
             
             // Final check after retry
             existing = world.read_model(entity_id);
-            if existing.id == entity_id && existing.id != 0 {
+            if existing.id != 0 {
                 panic!("Failed to generate unique entity ID after retries!");
             }
 
@@ -100,8 +102,9 @@ pub mod admin_system {
             let mut world = self.world_default();
 
             // Check if loot already exists for this creature
+            // In Dojo, non-existent models return default values (creature_id = 0)
             let existing: CreatureLoot = world.read_model(creature_id);
-            if existing.creature_id == creature_id && existing.creature_id != 0 {
+            if existing.creature_id != 0 {
                 panic!("Loot for this creature already exists!");
             }
 
@@ -133,16 +136,17 @@ pub mod admin_system {
             let mut recipe_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
 
             // Check if recipe already exists
+            // In Dojo, non-existent models return default values (recipe_id = 0)
             let mut existing: CraftRecipe = world.read_model(recipe_id);
             let mut attempts: u8 = 0;
-            while existing.recipe_id == recipe_id && existing.recipe_id != 0 && attempts < 10 {
+            while existing.recipe_id != 0 && attempts < 10 {
                 recipe_id = recipe_id + (attempts + 1).into();
                 existing = world.read_model(recipe_id);
                 attempts += 1;
             }
             
             existing = world.read_model(recipe_id);
-            if existing.recipe_id == recipe_id && existing.recipe_id != 0 {
+            if existing.recipe_id != 0 {
                 panic!("Failed to generate unique recipe ID after retries!");
             }
 
@@ -167,8 +171,9 @@ pub mod admin_system {
             let mut world = self.world_default();
 
             // Verify recipe exists first
+            // In Dojo, non-existent models return default values (recipe_id = 0)
             let recipe: CraftRecipe = world.read_model(recipe_id);
-            if recipe.recipe_id != recipe_id {
+            if recipe.recipe_id == 0 {
                 panic!("Craft recipe does not exist!");
             }
 
@@ -192,8 +197,9 @@ pub mod admin_system {
             let mut world = self.world_default();
 
             // Check if zone already exists
+            // In Dojo, non-existent models return default values (zone_id = 0)
             let existing: Zone = world.read_model(zone_id);
-            if existing.zone_id == zone_id && existing.zone_id != 0 {
+            if existing.zone_id != 0 {
                 panic!("Zone with this ID already exists!");
             }
 
@@ -227,16 +233,17 @@ pub mod admin_system {
             let mut recipe_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
 
             // Check if recipe already exists
+            // In Dojo, non-existent models return default values (recipe_id = 0)
             let mut existing: Recipe = world.read_model(recipe_id);
             let mut attempts: u8 = 0;
-            while existing.recipe_id == recipe_id && existing.recipe_id != 0 && attempts < 10 {
+            while existing.recipe_id != 0 && attempts < 10 {
                 recipe_id = recipe_id + (attempts + 1).into();
                 existing = world.read_model(recipe_id);
                 attempts += 1;
             }
             
             existing = world.read_model(recipe_id);
-            if existing.recipe_id == recipe_id && existing.recipe_id != 0 {
+            if existing.recipe_id != 0 {
                 panic!("Failed to generate unique potion recipe ID after retries!");
             }
 
@@ -263,8 +270,9 @@ pub mod admin_system {
             let mut world = self.world_default();
 
             // Verify recipe exists first
+            // In Dojo, non-existent models return default values (recipe_id = 0)
             let recipe: Recipe = world.read_model(recipe_id);
-            if recipe.recipe_id != recipe_id {
+            if recipe.recipe_id == 0 {
                 panic!("Potion recipe does not exist!");
             }
 
@@ -296,16 +304,17 @@ pub mod admin_system {
             let mut customer_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
 
             // Check if customer already exists
+            // In Dojo, non-existent models return default values (id = 0)
             let mut existing: Customer = world.read_model(customer_id);
             let mut attempts: u8 = 0;
-            while existing.id == customer_id && existing.id != 0 && attempts < 10 {
+            while existing.id != 0 && attempts < 10 {
                 customer_id = customer_id + (attempts + 1).into();
                 existing = world.read_model(customer_id);
                 attempts += 1;
             }
             
             existing = world.read_model(customer_id);
-            if existing.id == customer_id && existing.id != 0 {
+            if existing.id != 0 {
                 panic!("Failed to generate unique customer ID after retries!");
             }
 

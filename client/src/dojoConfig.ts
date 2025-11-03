@@ -21,10 +21,9 @@ export const dojoConfig = {
   // RPC URL - use localhost for local dev, public endpoint for hosted
   // rpcUrl: isLocalhost ? "http://localhost:5050/" : PUBLIC_RPC_URL,
   rpcUrl: "https://api.cartridge.gg/x/starknet/sepolia",
-  toriiUrl: "http://localhost:5050/",
-
-  // Torii indexer URL
-  // toriiUrl: isLocalhost ? "http://localhost:8080/" : PUBLIC_TORII_URL,
+  
+  // Torii indexer URL (runs on port 8080, not 5050)
+  toriiUrl: "http://localhost:8080/",
 
   // Namespace (from dojo_dev.toml: namespace.default = "wc")
   namespace: "witchcraft",

@@ -3,6 +3,7 @@ import { DojoContext } from "@dojoengine/sdk/react";
 import { AccountInterface } from "starknet";
 import { dojoConfig } from "../dojoConfig";
 import Controller from "@cartridge/controller";
+import { ToriiQueryBuilder, KeysClause, MemberClause } from "@dojoengine/sdk";
 
 // Extend Window interface for TypeScript
 declare global {
@@ -171,7 +172,13 @@ export interface UseDojoReturn {
   // System functions
   spawnPlayer: (name: string) => Promise<void>;
   movePlayer: (direction: Direction) => Promise<void>;
-  spawnNode: (x: number, y: number, ingredientType: IngredientType, rarity: number, quantity: number) => Promise<void>;
+  spawnNode: (
+    x: number,
+    y: number,
+    ingredientType: IngredientType,
+    rarity: number,
+    quantity: number
+  ) => Promise<void>;
   forage: () => Promise<void>;
   startBrew: (cauldronId: string, recipeId: string) => Promise<void>;
   finishBrew: (cauldronId: string) => Promise<void>;
@@ -190,14 +197,51 @@ export interface UseDojoReturn {
   enterZone: (zoneId: number) => Promise<void>;
   explore: () => Promise<void>;
   // Admin System Functions
-  createCombatEntity: (entityType: CombatEntityType, health: number, attack: number, defense: number) => Promise<string>;
-  createCreatureLoot: (creatureId: string, rewardGold: number, rewardItem: IngredientType, quantity: number) => Promise<void>;
-  createCraftRecipe: (resultType: CraftResultType, difficulty: number, baseValue: number) => Promise<string>;
-  addCraftIngredient: (recipeId: string, ingredientType: IngredientType, quantity: number) => Promise<void>;
-  createZone: (zoneId: number, zoneType: number, dangerLevel: number, nodeSpawnRate: number) => Promise<void>;
-  createPotionRecipe: (name: string, effect: number, difficulty: number, baseTime: bigint, baseValue: bigint) => Promise<string>;
-  addRecipeIngredient: (recipeId: string, ingredientType: IngredientType, quantity: number) => Promise<void>;
-  createCustomer: (faction: Faction, reputationReq: number, preferredRecipe: string) => Promise<string>;
+  createCombatEntity: (
+    entityType: CombatEntityType,
+    health: number,
+    attack: number,
+    defense: number
+  ) => Promise<string>;
+  createCreatureLoot: (
+    creatureId: string,
+    rewardGold: number,
+    rewardItem: IngredientType,
+    quantity: number
+  ) => Promise<void>;
+  createCraftRecipe: (
+    resultType: CraftResultType,
+    difficulty: number,
+    baseValue: number
+  ) => Promise<string>;
+  addCraftIngredient: (
+    recipeId: string,
+    ingredientType: IngredientType,
+    quantity: number
+  ) => Promise<void>;
+  createZone: (
+    zoneId: number,
+    zoneType: number,
+    dangerLevel: number,
+    nodeSpawnRate: number
+  ) => Promise<void>;
+  createPotionRecipe: (
+    name: string,
+    effect: number,
+    difficulty: number,
+    baseTime: bigint,
+    baseValue: bigint
+  ) => Promise<string>;
+  addRecipeIngredient: (
+    recipeId: string,
+    ingredientType: IngredientType,
+    quantity: number
+  ) => Promise<void>;
+  createCustomer: (
+    faction: Faction,
+    reputationReq: number,
+    preferredRecipe: string
+  ) => Promise<string>;
 
   // Transaction state
   isPending: boolean;
@@ -472,7 +516,8 @@ export function useDojoHook(): UseDojoReturn {
   const [factionReputations, setFactionReputations] = useState<
     FactionReputation[]
   >([]);
-  const [playerProgression, setPlayerProgression] = useState<PlayerProgression | null>(null);
+  const [playerProgression, setPlayerProgression] =
+    useState<PlayerProgression | null>(null);
   const [combatEntities, setCombatEntities] = useState<CombatEntity[]>([]);
   const [marketListings, setMarketListings] = useState<MarketListing[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -690,7 +735,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -721,7 +768,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -752,7 +801,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -783,7 +834,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -813,7 +866,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -844,7 +899,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -875,7 +932,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -905,7 +964,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -935,7 +996,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -965,7 +1028,9 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -995,46 +1060,47 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       // Note: This requires a view/call contract method, not a write transaction
       // For now, return 0 as placeholder - actual implementation needs SDK query support
-      console.warn("getLevel requires view/call contract support, not yet implemented");
+      console.warn(
+        "getLevel requires view/call contract support, not yet implemented"
+      );
       return 0;
     },
     [account, accountAddress, sdk]
   );
 
-  const tickRegeneration = useCallback(
-    async (): Promise<void> => {
-      if (!account || !accountAddress) {
-        throw new Error("Account not connected");
-      }
-      if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
-      }
+  const tickRegeneration = useCallback(async (): Promise<void> => {
+    if (!account || !accountAddress) {
+      throw new Error("Account not connected");
+    }
+    if (!sdk) {
+      throw new Error("SDK not initialized. Please wait for the SDK to load.");
+    }
 
-      setIsPending(true);
-      setError(null);
+    setIsPending(true);
+    setError(null);
 
-      try {
-        await executeSystem(
-          "wc-resource_regeneration_system",
-          "tick_regeneration",
-          [],
-          account
-        );
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        setError(error);
-        throw error;
-      } finally {
-        setIsPending(false);
-      }
-    },
-    [account, accountAddress, sdk, executeSystem]
-  );
+    try {
+      await executeSystem(
+        "wc-resource_regeneration_system",
+        "tick_regeneration",
+        [],
+        account
+      );
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  }, [account, accountAddress, sdk, executeSystem]);
 
   const enterZone = useCallback(
     async (zoneId: number): Promise<void> => {
@@ -1042,19 +1108,16 @@ export function useDojoHook(): UseDojoReturn {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
       setError(null);
 
       try {
-        await executeSystem(
-          "wc-zone_system",
-          "enter_zone",
-          [zoneId],
-          account
-        );
+        await executeSystem("wc-zone_system", "enter_zone", [zoneId], account);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         setError(error);
@@ -1066,44 +1129,43 @@ export function useDojoHook(): UseDojoReturn {
     [account, accountAddress, sdk, executeSystem]
   );
 
-  const explore = useCallback(
-    async (): Promise<void> => {
-      if (!account || !accountAddress) {
-        throw new Error("Account not connected");
-      }
-      if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
-      }
+  const explore = useCallback(async (): Promise<void> => {
+    if (!account || !accountAddress) {
+      throw new Error("Account not connected");
+    }
+    if (!sdk) {
+      throw new Error("SDK not initialized. Please wait for the SDK to load.");
+    }
 
-      setIsPending(true);
-      setError(null);
+    setIsPending(true);
+    setError(null);
 
-      try {
-        await executeSystem(
-          "wc-zone_system",
-          "explore",
-          [],
-          account
-        );
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        setError(error);
-        throw error;
-      } finally {
-        setIsPending(false);
-      }
-    },
-    [account, accountAddress, sdk, executeSystem]
-  );
+    try {
+      await executeSystem("wc-zone_system", "explore", [], account);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  }, [account, accountAddress, sdk, executeSystem]);
 
   // Admin System Functions
   const createCombatEntity = useCallback(
-    async (entityType: CombatEntityType, health: number, attack: number, defense: number): Promise<string> => {
+    async (
+      entityType: CombatEntityType,
+      health: number,
+      attack: number,
+      defense: number
+    ): Promise<string> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1117,7 +1179,7 @@ export function useDojoHook(): UseDojoReturn {
           [entityType, health, attack, defense],
           account
         );
-        
+
         // The contract returns the generated ID
         // We'll need to get it from the transaction result
         // For now, return a placeholder - in production you'd parse the transaction receipt
@@ -1134,12 +1196,19 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const createCreatureLoot = useCallback(
-    async (creatureId: string, rewardGold: number, rewardItem: IngredientType, quantity: number): Promise<void> => {
+    async (
+      creatureId: string,
+      rewardGold: number,
+      rewardItem: IngredientType,
+      quantity: number
+    ): Promise<void> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1165,12 +1234,18 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const createCraftRecipe = useCallback(
-    async (resultType: CraftResultType, difficulty: number, baseValue: number): Promise<string> => {
+    async (
+      resultType: CraftResultType,
+      difficulty: number,
+      baseValue: number
+    ): Promise<string> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1197,12 +1272,18 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const addCraftIngredient = useCallback(
-    async (recipeId: string, ingredientType: IngredientType, quantity: number): Promise<void> => {
+    async (
+      recipeId: string,
+      ingredientType: IngredientType,
+      quantity: number
+    ): Promise<void> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1228,12 +1309,19 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const createZone = useCallback(
-    async (zoneId: number, zoneType: number, dangerLevel: number, nodeSpawnRate: number): Promise<void> => {
+    async (
+      zoneId: number,
+      zoneType: number,
+      dangerLevel: number,
+      nodeSpawnRate: number
+    ): Promise<void> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1258,12 +1346,20 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const createPotionRecipe = useCallback(
-    async (name: string, effect: number, difficulty: number, baseTime: bigint, baseValue: bigint): Promise<string> => {
+    async (
+      name: string,
+      effect: number,
+      difficulty: number,
+      baseTime: bigint,
+      baseValue: bigint
+    ): Promise<string> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1291,12 +1387,18 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const addRecipeIngredient = useCallback(
-    async (recipeId: string, ingredientType: IngredientType, quantity: number): Promise<void> => {
+    async (
+      recipeId: string,
+      ingredientType: IngredientType,
+      quantity: number
+    ): Promise<void> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1322,12 +1424,18 @@ export function useDojoHook(): UseDojoReturn {
   );
 
   const createCustomer = useCallback(
-    async (faction: Faction, reputationReq: number, preferredRecipe: string): Promise<string> => {
+    async (
+      faction: Faction,
+      reputationReq: number,
+      preferredRecipe: string
+    ): Promise<string> => {
       if (!account || !accountAddress) {
         throw new Error("Account not connected");
       }
       if (!sdk) {
-        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
       }
 
       setIsPending(true);
@@ -1354,43 +1462,738 @@ export function useDojoHook(): UseDojoReturn {
     [account, accountAddress, sdk, executeSystem]
   );
 
-  // Fetch data from Torii using SDK's query capabilities
+  // Helper function to fetch data using GraphQL (fallback when gRPC is not available)
+  const fetchDataViaGraphQL = useCallback(async (accountAddress: string) => {
+    const toriiUrl = dojoConfig.toriiUrl.replace(/\/$/, ''); // Remove trailing slash
+    const graphqlUrl = `${toriiUrl}/graphql`;
+    
+    try {
+      // GraphQL query to fetch player data
+      // Note: Torii GraphQL schema may use different filter syntax
+      // Try querying without filters first to see the structure, then add filters
+      const query = `
+        query GetPlayerData {
+          wcPlayerModels {
+            edges {
+              node {
+                addr
+                name
+                health
+                stamina
+                reputation
+                gold
+              }
+            }
+          }
+          wcPositionModels {
+            edges {
+              node {
+                owner
+                x
+                y
+                zone
+              }
+            }
+          }
+          wcInventoryModels {
+            edges {
+              node {
+                owner
+                capacity
+                count
+              }
+            }
+          }
+          wcPlayerProgressionModels {
+            edges {
+              node {
+                player
+                level
+                xp
+                next_level_xp
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await fetch(graphqlUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`GraphQL request failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.errors) {
+        console.error('GraphQL errors:', result.errors);
+        return null;
+      }
+
+      console.log('GraphQL result:', result.data);
+
+      // Filter results by accountAddress on the client side
+      // Process Player data
+      if (result.data?.wcPlayerModels?.edges) {
+        const playerNode = result.data.wcPlayerModels.edges
+          .map((edge: any) => edge.node)
+          .find((player: any) => 
+            player.addr?.toLowerCase() === accountAddress.toLowerCase() ||
+            player.addr === accountAddress
+          );
+        
+        if (playerNode) {
+          console.log('Found Player data:', playerNode);
+          setPlayer({
+            addr: playerNode.addr,
+            name: playerNode.name || "",
+            gold: typeof playerNode.gold === 'string' 
+              ? BigInt(playerNode.gold) 
+              : BigInt(playerNode.gold || 0),
+            health: Number(playerNode.health || 0),
+            stamina: Number(playerNode.stamina || 0),
+            reputation: Number(playerNode.reputation || 0),
+          });
+        }
+      }
+
+      // Process Position data
+      if (result.data?.wcPositionModels?.edges) {
+        const positionNode = result.data.wcPositionModels.edges
+          .map((edge: any) => edge.node)
+          .find((position: any) => 
+            position.owner?.toLowerCase() === accountAddress.toLowerCase() ||
+            position.owner === accountAddress
+          );
+        
+        if (positionNode) {
+          console.log('Found Position data:', positionNode);
+          setPosition({
+            owner: positionNode.owner,
+            x: Number(positionNode.x || 0),
+            y: Number(positionNode.y || 0),
+            zone: String(positionNode.zone || "Forest"),
+          });
+        }
+      }
+
+      // Process Inventory data
+      if (result.data?.wcInventoryModels?.edges) {
+        const inventoryNode = result.data.wcInventoryModels.edges
+          .map((edge: any) => edge.node)
+          .find((inventory: any) => 
+            inventory.owner?.toLowerCase() === accountAddress.toLowerCase() ||
+            inventory.owner === accountAddress
+          );
+        
+        if (inventoryNode) {
+          console.log('Found Inventory data:', inventoryNode);
+          setInventory({
+            owner: inventoryNode.owner,
+            capacity: Number(inventoryNode.capacity || 0),
+            count: Number(inventoryNode.count || 0),
+          });
+        }
+      }
+
+      // Process PlayerProgression data
+      if (result.data?.wcPlayerProgressionModels?.edges) {
+        const progressionNode = result.data.wcPlayerProgressionModels.edges
+          .map((edge: any) => edge.node)
+          .find((progression: any) => 
+            progression.player?.toLowerCase() === accountAddress.toLowerCase() ||
+            progression.player === accountAddress
+          );
+        
+        if (progressionNode) {
+          console.log('Found PlayerProgression data:', progressionNode);
+          setPlayerProgression({
+            player: progressionNode.player,
+            level: Number(progressionNode.level || 1),
+            xp: Number(progressionNode.xp || 0),
+            next_level_xp: Number(progressionNode.next_level_xp || 100),
+          });
+        }
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching data via GraphQL:', error);
+      return null;
+    }
+  }, []);
+
+  // Helper function to process entity data (following dojo-intro pattern)
+  const processEntityData = useCallback((data: any[]) => {
+    if (!data || data.length === 0) {
+      console.warn("processEntityData: No data provided");
+      return;
+    }
+
+    console.log("Processing entity data:", data);
+
+    // Process all models from the same entity data (following dojo-intro pattern)
+    // Note: Each item in data might represent a different model, so we need to check all items
+    let foundAny = false;
+    
+    for (const entity of data) {
+      console.log("Processing entity:", entity);
+      
+      // Process Player model
+      const playerModel = entity.models?.wc?.Player;
+      if (playerModel) {
+        console.log("Found Player model:", playerModel);
+        foundAny = true;
+        setPlayer({
+          addr: playerModel.addr,
+          name: playerModel.name || "",
+          gold: BigInt(playerModel.gold || 0),
+          health: Number(playerModel.health || 0),
+          stamina: Number(playerModel.stamina || 0),
+          reputation: Number(playerModel.reputation || 0),
+        });
+      }
+
+      // Process Position model
+      const positionModel = entity.models?.wc?.Position;
+      if (positionModel) {
+        console.log("Found Position model:", positionModel);
+        foundAny = true;
+        setPosition({
+          owner: positionModel.owner,
+          x: Number(positionModel.x || 0),
+          y: Number(positionModel.y || 0),
+          zone: String(positionModel.zone || "Forest"),
+        });
+      }
+
+      // Process Inventory model
+      const inventoryModel = entity.models?.wc?.Inventory;
+      if (inventoryModel) {
+        console.log("Found Inventory model:", inventoryModel);
+        foundAny = true;
+        setInventory({
+          owner: inventoryModel.owner,
+          capacity: Number(inventoryModel.capacity || 0),
+          count: Number(inventoryModel.count || 0),
+        });
+      }
+
+      // Process PlayerProgression model
+      const progModel = entity.models?.wc?.PlayerProgression;
+      if (progModel) {
+        console.log("Found PlayerProgression model:", progModel);
+        foundAny = true;
+        setPlayerProgression({
+          player: progModel.player,
+          level: Number(progModel.level || 1),
+          xp: Number(progModel.xp || 0),
+          next_level_xp: Number(progModel.next_level_xp || 100),
+        });
+      }
+    }
+    
+    if (!foundAny) {
+      console.warn("processEntityData: No models found in entity data:", data);
+    }
+  }, []);
+
+  // Fetch data from Torii using SDK's query capabilities (following dojo-intro pattern)
   useEffect(() => {
-    if (!sdk || !accountAddress) return;
+    if (!sdk || !accountAddress) {
+      console.log("Skipping fetch: sdk=", !!sdk, "accountAddress=", accountAddress);
+      return;
+    }
+
+    // Normalize account address to ensure it matches Torii format (lowercase, with 0x prefix)
+    const normalizedAddress = accountAddress.toLowerCase().startsWith('0x') 
+      ? accountAddress.toLowerCase() 
+      : `0x${accountAddress.toLowerCase()}`;
+    
+    console.log("Using normalized address:", normalizedAddress, "original:", accountAddress);
 
     const fetchData = async () => {
+      // Silently return if Torii is not available - don't spam errors
+      // The app should still work for write operations even if Torii is down
       try {
-        // The SDK should provide query methods via Torii
-        // This is a placeholder - actual implementation depends on SDK API
-        // You may need to use sdk.torii or similar to query entities
-        // Example query structure (adjust based on actual SDK API):
-        // const playerData = await sdk.query('Player', accountAddress)
-        // setPlayer(playerData)
-      } catch (err) {
+        console.log("Fetching data for account:", normalizedAddress);
+        
+        // Try GraphQL first since gRPC seems to be unimplemented
+        console.log("Attempting to fetch data via GraphQL...");
+        const graphqlData = await fetchDataViaGraphQL(normalizedAddress);
+        
+        if (graphqlData) {
+          console.log("Successfully fetched data via GraphQL");
+          // Continue with other queries that might work
+        } else {
+          console.log("GraphQL fetch failed or returned no data, trying SDK methods...");
+          
+          // Try SDK methods as fallback (though they're likely to fail with Unimplemented)
+          try {
+            const playerEntities = await sdk.getEntities({
+              query: new ToriiQueryBuilder().withClause(
+                KeysClause(
+                  ["wc-Player", "wc-Position", "wc-Inventory", "wc-PlayerProgression"],
+                  [normalizedAddress],
+                  "FixedLen"
+                ).build()
+              ),
+            });
+
+            if (playerEntities.items.length > 0) {
+              processEntityData(playerEntities.items);
+            }
+          } catch (sdkError: any) {
+            // SDK methods fail with "Unimplemented" - that's expected
+            const errorStr = String(sdkError);
+            if (!errorStr.includes("Unimplemented")) {
+              console.warn("SDK query error (non-Unimplemented):", sdkError);
+            }
+          }
+        }
+
+        // Fetch IngredientItems by owner (has two keys: owner, slot)
+        const ingredientEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause(
+              "wc-IngredientItem",
+              "owner",
+              "Eq",
+              normalizedAddress
+            ).build()
+          ),
+        });
+
+        const items: IngredientItem[] = ingredientEntities.items
+          .map((entity) => {
+            const item = entity.models?.wc?.IngredientItem;
+            if (item) {
+              return {
+                owner: item.owner,
+                slot: Number(item.slot || 0),
+                ingredient_type: Number(item.ingredient_type || 0),
+                quantity: Number(item.quantity || 0),
+              };
+            }
+            return null;
+          })
+          .filter((item): item is IngredientItem => item !== null);
+        setIngredientItems(items);
+
+        // Fetch Cauldrons by owner
+        const cauldronEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause("wc-Cauldron", "owner", "Eq", normalizedAddress).build()
+          ),
+        });
+
+        const cauldronsList: Cauldron[] = cauldronEntities.items
+          .map((entity) => {
+            const cauldron = entity.models?.wc?.Cauldron;
+            if (cauldron) {
+              return {
+                owner: cauldron.owner,
+                cauldron_id: String(cauldron.cauldron_id || "0"),
+                quality: Number(cauldron.quality || 0),
+                brewing_until: BigInt(cauldron.brewing_until || 0),
+                recipe_id: String(cauldron.recipe_id || "0"),
+                busy: Boolean(cauldron.busy || false),
+              };
+            }
+            return null;
+          })
+          .filter((c): c is Cauldron => c !== null);
+        setCauldrons(cauldronsList);
+
+        // Fetch Potions by owner
+        const potionEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause("wc-Potion", "owner", "Eq", normalizedAddress).build()
+          ),
+        });
+
+        const potionsList: Potion[] = potionEntities.items
+          .map((entity) => {
+            const potion = entity.models?.wc?.Potion;
+            if (potion) {
+              return {
+                potion_id: String(potion.potion_id || "0"),
+                owner: potion.owner,
+                recipe_id: String(potion.recipe_id || "0"),
+                effect: Number(potion.effect || 0),
+                quality: Number(potion.quality || 0),
+                value: BigInt(potion.value || 0),
+              };
+            }
+            return null;
+          })
+          .filter((p): p is Potion => p !== null);
+        setPotions(potionsList);
+
+        // Fetch FactionReputation by player
+        const factionEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause(
+              "wc-FactionReputation",
+              "player",
+              "Eq",
+              normalizedAddress
+            ).build()
+          ),
+        });
+
+        const factionsList: FactionReputation[] = factionEntities.items
+          .map((entity) => {
+            const rep = entity.models?.wc?.FactionReputation;
+            if (rep) {
+              return {
+                player: rep.player,
+                faction: Number(rep.faction || 0),
+                reputation: Number(rep.reputation || 0),
+              };
+            }
+            return null;
+          })
+          .filter((r): r is FactionReputation => r !== null);
+        setFactionReputations(factionsList);
+
+
+        // Fetch all CombatEntities
+        const combatEntitiesList = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause("wc-CombatEntity", "alive", "Eq", true).build()
+          ),
+        });
+
+        const combatList: CombatEntity[] = combatEntitiesList.items
+          .map((entity) => {
+            const combat = entity.models?.wc?.CombatEntity;
+            if (combat) {
+              return {
+                id: String(combat.id || "0"),
+                entity_type: Number(combat.entity_type || 0),
+                health: Number(combat.health || 0),
+                attack: Number(combat.attack || 0),
+                defense: Number(combat.defense || 0),
+                alive: Boolean(combat.alive || false),
+              };
+            }
+            return null;
+          })
+          .filter((c): c is CombatEntity => c !== null);
+        setCombatEntities(combatList);
+
+        // Fetch active MarketListings
+        const marketEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause("wc-MarketListing", "active", "Eq", true).build()
+          ),
+        });
+
+        const marketList: MarketListing[] = marketEntities.items
+          .map((entity) => {
+            const listing = entity.models?.wc?.MarketListing;
+            if (listing) {
+              return {
+                listing_id: String(listing.listing_id || "0"),
+                item_type: String(listing.item_type || "0"),
+                price: BigInt(listing.price || 0),
+                quantity: Number(listing.quantity || 0),
+                seller: listing.seller,
+                active: Boolean(listing.active || false),
+              };
+            }
+            return null;
+          })
+          .filter((m): m is MarketListing => m !== null);
+        setMarketListings(marketList);
+
+        // Fetch all Zones
+        const zoneEntities = await sdk.getEntities({
+          query: new ToriiQueryBuilder().withClause(
+            MemberClause("wc-Zone", "zone_id", "Gt", 0).build()
+          ),
+        });
+
+        const zonesList: Zone[] = zoneEntities.items
+          .map((entity) => {
+            const zone = entity.models?.wc?.Zone;
+            if (zone) {
+              return {
+                zone_id: Number(zone.zone_id || 0),
+                zone_type: Number(zone.zone_type || 0),
+                danger_level: Number(zone.danger_level || 0),
+                node_spawn_rate: Number(zone.node_spawn_rate || 0),
+              };
+            }
+            return null;
+          })
+          .filter((z): z is Zone => z !== null);
+        setZones(zonesList);
+      } catch (err: any) {
+        // Only log if it's not a connection or unimplemented error
+        // "Unimplemented" usually means Torii isn't properly configured or version mismatch
+        const errorMessage = err?.message || String(err);
+        const errorString = String(err);
+        if (
+          !errorMessage.includes("Failed to fetch") && 
+          !errorMessage.includes("Connection refused") &&
+          !errorString.includes("Unimplemented") &&
+          !errorMessage.includes("status: Unimplemented")
+        ) {
         console.error("Error fetching data from Torii:", err);
+        }
+        // Don't throw - allow app to continue without Torii data
       }
     };
 
     fetchData();
 
-    // Set up subscriptions for real-time updates
-    // The SDK should handle this automatically, but you may need to configure it
-  }, [sdk, accountAddress]);
+    // Set up subscriptions for real-time updates (following dojo-intro pattern)
+    if (sdk && accountAddress) {
+      // Wrap subscriptions in try-catch to handle Torii connection errors gracefully
+      try {
+        // Following dojo-intro pattern: subscribe to multiple related models in one query
+        // Subscribe to Player, Position, Inventory, and PlayerProgression changes together
+        // Wrap in promise catch to handle "Unimplemented" errors gracefully
+        // Use normalizedAddress for consistency
+        const normalizedAddress = accountAddress.toLowerCase().startsWith('0x') 
+          ? accountAddress.toLowerCase() 
+          : `0x${accountAddress.toLowerCase()}`;
+          
+        sdk.subscribeEntityQuery({
+          query: new ToriiQueryBuilder()
+            .withClause(
+              KeysClause(
+                ["wc-Player", "wc-Position", "wc-Inventory", "wc-PlayerProgression"],
+                [normalizedAddress],
+                "FixedLen"
+              ).build()
+            )
+            .includeHashedKeys(),
+          callback: ({ data, error }) => {
+            if (data) {
+              processEntityData(data);
+            }
+            // Only log non-connection/unimplemented errors
+            const errorStr = String(error);
+            if (
+              error && 
+              !errorStr.includes("Failed to fetch") && 
+              !errorStr.includes("Connection refused") &&
+              !errorStr.includes("Unimplemented")
+            ) {
+              console.error("Player data subscription error:", error);
+            }
+          },
+        }).catch((err: any) => {
+          // Handle promise rejection from subscription setup
+          const errorStr = String(err);
+          const errorMessage = err?.message || errorStr;
+          if (
+            !errorMessage.includes("Failed to fetch") && 
+            !errorMessage.includes("Connection refused") &&
+            !errorStr.includes("Unimplemented") &&
+            !errorMessage.includes("status: Unimplemented")
+          ) {
+            console.error("Failed to set up player data subscription:", err);
+          }
+        });
+
+      // Subscribe to IngredientItem changes
+      sdk.subscribeEntityQuery({
+        query: new ToriiQueryBuilder()
+          .withClause(
+            MemberClause(
+              "wc-IngredientItem",
+              "owner",
+              "Eq",
+              normalizedAddress
+            ).build()
+          )
+          .includeHashedKeys(),
+        callback: ({ data, error }) => {
+          if (data) {
+            const items: IngredientItem[] = data
+              .map((entity) => {
+                const item = entity.models?.wc?.IngredientItem;
+                if (item) {
+                  return {
+                    owner: item.owner,
+                    slot: Number(item.slot || 0),
+                    ingredient_type: Number(item.ingredient_type || 0),
+                    quantity: Number(item.quantity || 0),
+                  };
+                }
+                return null;
+              })
+              .filter((item): item is IngredientItem => item !== null);
+            setIngredientItems(items);
+          }
+          // Only log non-connection errors
+          if (error && !String(error).includes("Failed to fetch") && !String(error).includes("Connection refused")) {
+            console.error("IngredientItem subscription error:", error);
+          }
+        },
+      }).catch((err: any) => {
+        // Handle promise rejection from subscription setup
+        const errorStr = String(err);
+        const errorMessage = err?.message || errorStr;
+        if (
+          !errorMessage.includes("Failed to fetch") && 
+          !errorMessage.includes("Connection refused") &&
+          !errorStr.includes("Unimplemented") &&
+          !errorMessage.includes("status: Unimplemented")
+        ) {
+          console.error("Failed to set up IngredientItem subscription:", err);
+        }
+      });
+
+      // Subscribe to Potion changes
+      sdk.subscribeEntityQuery({
+        query: new ToriiQueryBuilder()
+          .withClause(
+            MemberClause("wc-Potion", "owner", "Eq", normalizedAddress).build()
+          )
+          .includeHashedKeys(),
+        callback: ({ data, error }) => {
+          if (data) {
+            const potionsList: Potion[] = data
+              .map((entity) => {
+                const potion = entity.models?.wc?.Potion;
+                if (potion) {
+                  return {
+                    potion_id: String(potion.potion_id || "0"),
+                    owner: potion.owner,
+                    recipe_id: String(potion.recipe_id || "0"),
+                    effect: Number(potion.effect || 0),
+                    quality: Number(potion.quality || 0),
+                    value: BigInt(potion.value || 0),
+                  };
+                }
+                return null;
+              })
+              .filter((p): p is Potion => p !== null);
+            setPotions(potionsList);
+          }
+          // Only log non-connection errors
+          if (error && !String(error).includes("Failed to fetch") && !String(error).includes("Connection refused")) {
+            console.error("Potion subscription error:", error);
+          }
+        },
+      }).catch((err: any) => {
+        // Handle promise rejection from subscription setup
+        const errorStr = String(err);
+        const errorMessage = err?.message || errorStr;
+        if (
+          !errorMessage.includes("Failed to fetch") && 
+          !errorMessage.includes("Connection refused") &&
+          !errorStr.includes("Unimplemented") &&
+          !errorMessage.includes("status: Unimplemented")
+        ) {
+          console.error("Failed to set up Potion subscription:", err);
+        }
+      });
+
+      } catch (subscriptionError: any) {
+        // Silently handle subscription setup errors
+        const errorMessage = subscriptionError?.message || String(subscriptionError);
+        const errorString = String(subscriptionError);
+        if (
+          !errorMessage.includes("Failed to fetch") && 
+          !errorMessage.includes("Connection refused") &&
+          !errorString.includes("Unimplemented") &&
+          !errorMessage.includes("status: Unimplemented")
+        ) {
+          console.error("Error setting up Torii subscriptions:", subscriptionError);
+        }
+      }
+    }
+  }, [sdk, accountAddress, processEntityData, fetchDataViaGraphQL]);
 
   const refreshData = useCallback(async () => {
-    // Force refresh by re-fetching from Torii
-    // The SDK should handle this automatically via subscriptions
-    // This is a placeholder for manual refresh if needed
+    // Force refresh by re-fetching from Torii (following dojo-intro pattern)
     if (!sdk || !accountAddress) return;
 
+    // Normalize account address
+    const normalizedAddress = accountAddress.toLowerCase().startsWith('0x') 
+      ? accountAddress.toLowerCase() 
+      : `0x${accountAddress.toLowerCase()}`;
+
     try {
-      // Trigger a re-fetch of all data
-      // Implementation depends on SDK's actual query API
-      console.log("Refreshing data from Torii...");
-    } catch (err) {
+      // Use GraphQL since gRPC is unimplemented
+      await fetchDataViaGraphQL(normalizedAddress);
+
+      // Fetch IngredientItems
+      const ingredientEntities = await sdk.getEntities({
+        query: new ToriiQueryBuilder().withClause(
+          MemberClause(
+            "wc-IngredientItem",
+            "owner",
+            "Eq",
+            normalizedAddress
+          ).build()
+        ),
+      });
+
+      const items: IngredientItem[] = ingredientEntities.items
+        .map((entity) => {
+          const item = entity.models?.wc?.IngredientItem;
+          if (item) {
+            return {
+              owner: item.owner,
+              slot: Number(item.slot || 0),
+              ingredient_type: Number(item.ingredient_type || 0),
+              quantity: Number(item.quantity || 0),
+            };
+          }
+          return null;
+        })
+        .filter((item): item is IngredientItem => item !== null);
+      setIngredientItems(items);
+
+      // Fetch Potions
+      const potionEntities = await sdk.getEntities({
+        query: new ToriiQueryBuilder().withClause(
+          MemberClause("wc-Potion", "owner", "Eq", normalizedAddress).build()
+        ),
+      });
+
+      const potionsList: Potion[] = potionEntities.items
+        .map((entity) => {
+          const potion = entity.models?.wc?.Potion;
+          if (potion) {
+            return {
+              potion_id: String(potion.potion_id || "0"),
+              owner: potion.owner,
+              recipe_id: String(potion.recipe_id || "0"),
+              effect: Number(potion.effect || 0),
+              quality: Number(potion.quality || 0),
+              value: BigInt(potion.value || 0),
+            };
+          }
+          return null;
+        })
+        .filter((p): p is Potion => p !== null);
+      setPotions(potionsList);
+
+      console.log("Data refreshed from Torii");
+    } catch (err: any) {
+      // Only log if it's not a connection error
+      const errorMessage = err?.message || String(err);
+      if (!errorMessage.includes("Failed to fetch") && !errorMessage.includes("Connection refused")) {
       console.error("Error refreshing data:", err);
+      }
     }
-  }, [sdk, accountAddress]);
+  }, [sdk, accountAddress, fetchDataViaGraphQL]);
 
   return {
     account: account || null,
