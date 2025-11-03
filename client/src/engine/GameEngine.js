@@ -51,12 +51,18 @@ export class GameEngine {
       this.mouse.y = e.clientY - rect.top
     })
     
-    this.canvas.addEventListener('mousedown', () => {
-      this.mouse.down = true
+    this.canvas.addEventListener('mousedown', (e) => {
+      // Only track left mouse button (button 0)
+      if (e.button === 0) {
+        this.mouse.down = true
+      }
     })
     
-    this.canvas.addEventListener('mouseup', () => {
-      this.mouse.down = false
+    this.canvas.addEventListener('mouseup', (e) => {
+      // Only track left mouse button (button 0)
+      if (e.button === 0) {
+        this.mouse.down = false
+      }
     })
   }
 
