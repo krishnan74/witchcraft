@@ -15,6 +15,8 @@ export class ExplorationScene extends BaseScene {
     this.player = null
     this.speed = 3 // Normal movement speed
     this.backgroundImage = null
+    this.backgroundImageDay = null
+    this.backgroundImageNight = null
     this.buildings = []
     this.nearbyBuilding = null // Currently nearby building for popup
     this.biomes = [] // Array to hold biome entities
@@ -40,18 +42,34 @@ export class ExplorationScene extends BaseScene {
       }
     }))
 
-    // Load background image
+    // Load background images (day and night)
     try {
-      const bgImg = new Image()
+      // Load day background (grass.png)
+      const bgImgDay = new Image()
       await new Promise((resolve, reject) => {
-        bgImg.onload = resolve
-        bgImg.onerror = reject
-        bgImg.src = '/sprites/grass.png'
+        bgImgDay.onload = resolve
+        bgImgDay.onerror = reject
+        bgImgDay.src = '/sprites/grass.png'
       })
-      this.backgroundImage = bgImg
-      console.log('✅ Background image loaded:', bgImg.width, 'x', bgImg.height)
+      this.backgroundImageDay = bgImgDay
+      console.log('✅ Day background image loaded:', bgImgDay.width, 'x', bgImgDay.height)
+      
+      // Load night background (night.png)
+      const bgImgNight = new Image()
+      await new Promise((resolve, reject) => {
+        bgImgNight.onload = resolve
+        bgImgNight.onerror = reject
+        bgImgNight.src = '/sprites/night.png'
+      })
+      this.backgroundImageNight = bgImgNight
+      console.log('✅ Night background image loaded:', bgImgNight.width, 'x', bgImgNight.height)
+      
+      // Set initial background based on current time of day
+      this.updateBackgroundImage()
     } catch (error) {
-      console.warn('Background image not found, using default gradient')
+      console.warn('Background image not found, using default gradient', error)
+      this.backgroundImageDay = null
+      this.backgroundImageNight = null
       this.backgroundImage = null
     }
 
@@ -620,10 +638,27 @@ export class ExplorationScene extends BaseScene {
     }
   }
 
+  /**
+   * Update background image based on current time of day
+   */
+  updateBackgroundImage() {
+    const timeOfDay = this.gameState?.worldState?.time_of_day
+    if (timeOfDay === 'Night' && this.backgroundImageNight) {
+      this.backgroundImage = this.backgroundImageNight
+    } else if (this.backgroundImageDay) {
+      this.backgroundImage = this.backgroundImageDay
+    } else {
+      this.backgroundImage = null
+    }
+  }
+
   render(ctx) {
-    // Draw grass background first (in world space, camera transform already applied by GameEngine)
+    // Update background image based on time of day
+    this.updateBackgroundImage()
+    
+    // Draw background (grass for day, night for night) - in world space, camera transform already applied by GameEngine
     if (this.backgroundImage && this.backgroundImage.complete) {
-      // Draw grass background covering the entire world
+      // Draw background covering the entire world
       ctx.drawImage(
         this.backgroundImage,
         0, 0, // World origin
