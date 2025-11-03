@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import GameCanvas from './components/GameCanvas'
 import InventoryPopup from './components/InventoryPopup'
 import RecipeBookPopup from './components/RecipeBookPopup'
@@ -7,7 +8,8 @@ import ShopPopup from './components/ShopPopup'
 import NightBeginsPopup from './components/NightBeginsPopup'
 import SpawnPlayerButton from './components/SpawnPlayerButton'
 import WalletConnect from './components/WalletConnect'
-import MvpTestFlow from './components/MvpTestFlow'
+import DashboardPage from './pages/DashboardPage.tsx'
+import AdminPage from './pages/AdminPage.tsx'
 import { startBrew, finishBrew } from './utils/brewingSystem'
 import { initializeCycle, updateCycle, getTimeRemaining } from './utils/dayNightCycle'
 import { generateCustomerOrders } from './utils/shopSystem'
@@ -234,160 +236,201 @@ function App({ controller }) {
   }, [])
 
   return (
-    <div className="app">
-      {/* Wallet Connection */}
-      <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000, maxWidth: '350px' }}>
-        <WalletConnect controller={controller} />
-      </div>
-
-      {/* Dojo Integration Test Button */}
-          <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
-            <SpawnPlayerButton />
-          </div>
-
-          <div style={{ position: 'fixed', bottom: '20px', left: '20px', zIndex: 1000, maxWidth: '850px' }}>
-            <MvpTestFlow />
-          </div>
-
-      <div className="game-container">
-        <GameCanvas ref={canvasRef} />
-        <div className="ui-overlay">
-          <div className="stats-bar">
-            <div className="stat">Day: {gameState.worldState.day}</div>
-            <div className="stat">Time: {gameState.worldState.time_of_day}</div>
-            <div className="stat">
-              {gameState.worldState.time_of_day === 'Night' 
-                ? `Night: ${Math.ceil(timeRemaining / 1000)}s`
-                : `Day: ${Math.ceil(timeRemaining / 1000)}s`}
+    <BrowserRouter>
+      <Routes>
+        {/* Game View Route */}
+        <Route path="/" element={
+          <div className="app">
+            {/* Wallet Connection */}
+            <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000, maxWidth: '350px' }}>
+              <WalletConnect controller={controller} />
             </div>
-            <div className="stat">Gold: {gameState.player.gold}</div>
-            <div className="stat">Health: {gameState.player.health}</div>
-          </div>
-        </div>
-      </div>
 
-      {/* Inventory Popup */}
-      <InventoryPopup
-        isOpen={showInventory}
-        onClose={() => setShowInventory(false)}
-        inventory={gameState.inventory}
-        ingredientItems={gameState.ingredientItems}
-        potions={gameState.potions}
-        player={gameState.player}
-      />
+            {/* Navigation Links */}
+            <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '10px' }}>
+              <Link 
+                to="/dashboard" 
+                style={{ 
+                  padding: '10px 20px', 
+                  backgroundColor: '#4caf50', 
+                  color: 'white', 
+                  textDecoration: 'none', 
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                to="/admin" 
+                style={{ 
+                  padding: '10px 20px', 
+                  backgroundColor: '#d32f2f', 
+                  color: 'white', 
+                  textDecoration: 'none', 
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Admin
+              </Link>
+            </div>
 
-      {/* Recipe Book Popup */}
-      <RecipeBookPopup
-        isOpen={showRecipeBook}
-        onClose={() => setShowRecipeBook(false)}
-        currentDay={gameState.worldState.day}
-      />
+            {/* Dojo Integration Test Button */}
+            <div style={{ position: 'fixed', top: '60px', right: '20px', zIndex: 1000 }}>
+              <SpawnPlayerButton />
+            </div>
 
-      {/* Cauldron Popup */}
-      <CauldronPopup
-        isOpen={showCauldron}
-        onClose={() => setShowCauldron(false)}
-        currentDay={gameState.worldState.day}
-        ingredientItems={gameState.ingredientItems}
-        onStartBrew={(recipe) => {
-          // Handle brewing - consume ingredients and create potion
-          // TODO: Replace with Dojo calls when integrated
-          // Dojo: await brewingSystem.start_brew(cauldron_id, recipe_id)
-          
-          // Check and start brewing (matches Dojo start_brew logic)
-          const brewResult = startBrew(recipe, gameState.ingredientItems, 'cauldron_1')
-          
-          if (brewResult.success) {
-            // Update inventory with consumed ingredients
-            setGameState(prev => ({
-              ...prev,
-              ingredientItems: brewResult.updatedItems,
-              inventory: {
-                ...prev.inventory,
-                count: brewResult.updatedItems.reduce((sum, item) => sum + item.quantity, 0)
-              }
-            }))
-            
-            // Simulate brewing time and create potion
-            // TODO: In Dojo, this will check block_number >= brewing_until
-            setTimeout(() => {
-              // Dojo: await brewingSystem.finish_brew(cauldron_id)
-              const finishResult = finishBrew(recipe, 1) // cauldronQuality = 1 for now
-              
-              if (finishResult.success) {
-                // Add potion to inventory (matches Dojo potion creation)
-                setGameState(prev => ({
-                  ...prev,
-                  potions: [...(prev.potions || []), finishResult.potion],
-                  player: {
-                    ...prev.player,
-                    gold: prev.player.gold + finishResult.goldEarned
-                  }
-                }))
+            <div className="game-container">
+              <GameCanvas ref={canvasRef} />
+              <div className="ui-overlay">
+                <div className="stats-bar">
+                  <div className="stat">Day: {gameState.worldState.day}</div>
+                  <div className="stat">Time: {gameState.worldState.time_of_day}</div>
+                  <div className="stat">
+                    {gameState.worldState.time_of_day === 'Night' 
+                      ? `Night: ${Math.ceil(timeRemaining / 1000)}s`
+                      : `Day: ${Math.ceil(timeRemaining / 1000)}s`}
+                  </div>
+                  <div className="stat">Gold: {gameState.player.gold}</div>
+                  <div className="stat">Health: {gameState.player.health}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Inventory Popup */}
+            <InventoryPopup
+              isOpen={showInventory}
+              onClose={() => setShowInventory(false)}
+              inventory={gameState.inventory}
+              ingredientItems={gameState.ingredientItems}
+              potions={gameState.potions}
+              player={gameState.player}
+            />
+
+            {/* Recipe Book Popup */}
+            <RecipeBookPopup
+              isOpen={showRecipeBook}
+              onClose={() => setShowRecipeBook(false)}
+              currentDay={gameState.worldState.day}
+            />
+
+            {/* Cauldron Popup */}
+            <CauldronPopup
+              isOpen={showCauldron}
+              onClose={() => setShowCauldron(false)}
+              currentDay={gameState.worldState.day}
+              ingredientItems={gameState.ingredientItems}
+              onStartBrew={(recipe) => {
+                // Handle brewing - consume ingredients and create potion
+                // TODO: Replace with Dojo calls when integrated
+                // Dojo: await brewingSystem.start_brew(cauldron_id, recipe_id)
                 
-                console.log(`✅ Potion brewed: ${finishResult.potion.effect} (Quality: ${finishResult.potion.quality})`)
+                // Check and start brewing (matches Dojo start_brew logic)
+                const brewResult = startBrew(recipe, gameState.ingredientItems, 'cauldron_1')
                 
-                // Close cauldron popup after brewing completes
-                setShowCauldron(false)
-              }
-            }, recipe.base_time * 1000)
-          } else {
-            console.warn('Brewing failed:', brewResult.error)
-          }
-        }}
-      />
-
-      {/* Shop Popup (opens during night time) */}
-      <ShopPopup
-        isOpen={showShop && gameState.worldState.time_of_day === 'Night'}
-        onClose={() => setShowShop(false)}
-        currentDay={gameState.worldState.day}
-        orders={gameState.orders}
-        potions={gameState.potions}
-        timeRemaining={timeRemaining}
-        onSellPotion={(result) => {
-          // Handle potion sale
-          // TODO: Replace with Dojo calls when integrated
-          // Dojo: await shopSystem.fulfill_order(order_id, potion_id)
-          
-          if (result.success) {
-            setGameState(prev => {
-              // Remove sold potion from inventory
-              const updatedPotions = prev.potions.filter(
-                p => p.potion_id !== result.potion.potion_id
-              )
-              
-              // Mark order as fulfilled
-              const updatedOrders = prev.orders.map(order => 
-                order.order_id === result.orderId
-                  ? { ...order, fulfilled: true }
-                  : order
-              )
-              
-              // Add gold
-              return {
-                ...prev,
-                potions: updatedPotions,
-                orders: updatedOrders,
-                player: {
-                  ...prev.player,
-                  gold: prev.player.gold + result.goldEarned
+                if (brewResult.success) {
+                  // Update inventory with consumed ingredients
+                  setGameState(prev => ({
+                    ...prev,
+                    ingredientItems: brewResult.updatedItems,
+                    inventory: {
+                      ...prev.inventory,
+                      count: brewResult.updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+                    }
+                  }))
+                  
+                  // Simulate brewing time and create potion
+                  // TODO: In Dojo, this will check block_number >= brewing_until
+                  setTimeout(() => {
+                    // Dojo: await brewingSystem.finish_brew(cauldron_id)
+                    const finishResult = finishBrew(recipe, 1) // cauldronQuality = 1 for now
+                    
+                    if (finishResult.success) {
+                      // Add potion to inventory (matches Dojo potion creation)
+                      setGameState(prev => ({
+                        ...prev,
+                        potions: [...(prev.potions || []), finishResult.potion],
+                        player: {
+                          ...prev.player,
+                          gold: prev.player.gold + finishResult.goldEarned
+                        }
+                      }))
+                      
+                      console.log(`✅ Potion brewed: ${finishResult.potion.effect} (Quality: ${finishResult.potion.quality})`)
+                      
+                      // Close cauldron popup after brewing completes
+                      setShowCauldron(false)
+                    }
+                  }, recipe.base_time * 1000)
+                } else {
+                  console.warn('Brewing failed:', brewResult.error)
                 }
-              }
-            })
-            
-            console.log(`💰 Sold potion for ${result.goldEarned} gold!`)
-          }
-        }}
-      />
+              }}
+            />
 
-      {/* Night Begins Popup (auto-shows when night starts) */}
-      <NightBeginsPopup
-        isOpen={showNightBegins}
-        onClose={() => setShowNightBegins(false)}
-        currentDay={gameState.worldState.day}
-      />
-    </div>
+            {/* Shop Popup (opens during night time) */}
+            <ShopPopup
+              isOpen={showShop && gameState.worldState.time_of_day === 'Night'}
+              onClose={() => setShowShop(false)}
+              currentDay={gameState.worldState.day}
+              orders={gameState.orders}
+              potions={gameState.potions}
+              timeRemaining={timeRemaining}
+              onSellPotion={(result) => {
+                // Handle potion sale
+                // TODO: Replace with Dojo calls when integrated
+                // Dojo: await shopSystem.fulfill_order(order_id, potion_id)
+                
+                if (result.success) {
+                  setGameState(prev => {
+                    // Remove sold potion from inventory
+                    const updatedPotions = prev.potions.filter(
+                      p => p.potion_id !== result.potion.potion_id
+                    )
+                    
+                    // Mark order as fulfilled
+                    const updatedOrders = prev.orders.map(order => 
+                      order.order_id === result.orderId
+                        ? { ...order, fulfilled: true }
+                        : order
+                    )
+                    
+                    // Add gold
+                    return {
+                      ...prev,
+                      potions: updatedPotions,
+                      orders: updatedOrders,
+                      player: {
+                        ...prev.player,
+                        gold: prev.player.gold + result.goldEarned
+                      }
+                    }
+                  })
+                  
+                  console.log(`💰 Sold potion for ${result.goldEarned} gold!`)
+                }
+              }}
+            />
+
+            {/* Night Begins Popup (auto-shows when night starts) */}
+            <NightBeginsPopup
+              isOpen={showNightBegins}
+              onClose={() => setShowNightBegins(false)}
+              currentDay={gameState.worldState.day}
+            />
+          </div>
+        } />
+
+        {/* Dashboard Route */}
+        <Route path="/dashboard" element={<DashboardPage controller={controller} />} />
+
+        {/* Admin Route */}
+        <Route path="/admin" element={<AdminPage controller={controller} />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

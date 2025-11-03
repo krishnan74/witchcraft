@@ -148,6 +148,15 @@ async function main() {
             { tag: 'wc-node_spawn_system', name: 'Node Spawn System', description: 'Ingredient node spawning system', entrypoints: ['spawn_node'] },
             { tag: 'wc-forage_system', name: 'Forage System', description: 'Ingredient foraging system', entrypoints: ['forage'] },
             { tag: 'wc-brewing_system', name: 'Brewing System', description: 'Potion brewing system', entrypoints: ['start_brew', 'finish_brew'] },
+            { tag: 'wc-sell_system', name: 'Sell System', description: 'Potion selling system', entrypoints: ['sell_potion'] },
+            { tag: 'wc-combat_system', name: 'Combat System', description: 'Combat and attack system', entrypoints: ['attack'] },
+            { tag: 'wc-crafting_system', name: 'Crafting System', description: 'Advanced crafting system', entrypoints: ['craft'] },
+            { tag: 'wc-economy_system', name: 'Economy System', description: 'Marketplace and trading system', entrypoints: ['list_item', 'buy_item', 'cancel_listing'] },
+            { tag: 'wc-faction_system', name: 'Faction System', description: 'Faction reputation system', entrypoints: ['join_faction', 'increase_reputation', 'apply_faction_bonus'] },
+            { tag: 'wc-progression_system', name: 'Progression System', description: 'Player progression and XP system', entrypoints: ['add_xp', 'get_level'] },
+            { tag: 'wc-resource_regeneration_system', name: 'Resource Regeneration System', description: 'Resource node regeneration system', entrypoints: ['tick_regeneration'] },
+            { tag: 'wc-zone_system', name: 'Zone System', description: 'Zone exploration system', entrypoints: ['enter_zone', 'explore'] },
+            { tag: 'wc-admin_system', name: 'Admin System', description: 'Game manager admin system', entrypoints: ['create_combat_entity', 'create_creature_loot', 'create_craft_recipe', 'add_craft_ingredient', 'create_zone', 'create_potion_recipe', 'add_recipe_ingredient', 'create_customer'] },
         ];
         
         systemContracts.forEach(({ tag, name, description, entrypoints }) => {

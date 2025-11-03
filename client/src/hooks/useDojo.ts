@@ -74,6 +74,75 @@ export interface FactionReputation {
   reputation: number;
 }
 
+export interface PlayerProgression {
+  player: string;
+  level: number;
+  xp: number;
+  next_level_xp: number;
+}
+
+export interface CombatEntity {
+  id: string;
+  entity_type: number; // CombatEntityType enum
+  health: number;
+  attack: number;
+  defense: number;
+  alive: boolean;
+}
+
+export interface CreatureLoot {
+  creature_id: string;
+  reward_gold: number;
+  reward_item: number; // IngredientType enum
+  quantity: number;
+}
+
+export interface CraftRecipe {
+  recipe_id: string;
+  result_type: number; // CraftResultType enum
+  difficulty: number;
+  base_value: number;
+}
+
+export interface Zone {
+  zone_id: number;
+  zone_type: number; // ZoneType enum
+  danger_level: number;
+  node_spawn_rate: number;
+}
+
+export interface MarketListing {
+  listing_id: string;
+  item_type: string; // felt252 (ingredient type or potion id)
+  price: bigint;
+  quantity: number;
+  seller: string;
+  active: boolean;
+}
+
+// Faction enum values (matching Cairo Faction enum)
+export enum Faction {
+  Demon = 0,
+  Zombie = 1,
+  Vampire = 2,
+  Ghost = 3,
+  HumanHunter = 4,
+}
+
+// CombatEntityType enum
+export enum CombatEntityType {
+  Player = 0,
+  Creature = 1,
+  Boss = 2,
+}
+
+// CraftResultType enum
+export enum CraftResultType {
+  Potion = 0,
+  Charm = 1,
+  Tool = 2,
+}
+
 // Direction enum values (matching Cairo Direction enum)
 export enum Direction {
   Left = 0,
@@ -106,6 +175,29 @@ export interface UseDojoReturn {
   forage: () => Promise<void>;
   startBrew: (cauldronId: string, recipeId: string) => Promise<void>;
   finishBrew: (cauldronId: string) => Promise<void>;
+  sellPotion: (potionId: string) => Promise<void>;
+  attack: (targetId: string) => Promise<void>;
+  craft: (recipeId: string) => Promise<void>;
+  listItem: (itemSlot: number, price: bigint) => Promise<void>;
+  buyItem: (listingId: string) => Promise<void>;
+  cancelListing: (listingId: string) => Promise<void>;
+  joinFaction: (faction: Faction) => Promise<void>;
+  increaseReputation: (faction: Faction, amount: number) => Promise<void>;
+  applyFactionBonus: (playerAddress: string) => Promise<void>;
+  addXp: (amount: number) => Promise<void>;
+  getLevel: (playerAddress: string) => Promise<number>;
+  tickRegeneration: () => Promise<void>;
+  enterZone: (zoneId: number) => Promise<void>;
+  explore: () => Promise<void>;
+  // Admin System Functions
+  createCombatEntity: (entityType: CombatEntityType, health: number, attack: number, defense: number) => Promise<string>;
+  createCreatureLoot: (creatureId: string, rewardGold: number, rewardItem: IngredientType, quantity: number) => Promise<void>;
+  createCraftRecipe: (resultType: CraftResultType, difficulty: number, baseValue: number) => Promise<string>;
+  addCraftIngredient: (recipeId: string, ingredientType: IngredientType, quantity: number) => Promise<void>;
+  createZone: (zoneId: number, zoneType: number, dangerLevel: number, nodeSpawnRate: number) => Promise<void>;
+  createPotionRecipe: (name: string, effect: number, difficulty: number, baseTime: bigint, baseValue: bigint) => Promise<string>;
+  addRecipeIngredient: (recipeId: string, ingredientType: IngredientType, quantity: number) => Promise<void>;
+  createCustomer: (faction: Faction, reputationReq: number, preferredRecipe: string) => Promise<string>;
 
   // Transaction state
   isPending: boolean;
@@ -120,6 +212,10 @@ export interface UseDojoReturn {
   cauldrons: Cauldron[];
   potions: Potion[];
   factionReputations: FactionReputation[];
+  playerProgression: PlayerProgression | null;
+  combatEntities: CombatEntity[];
+  marketListings: MarketListing[];
+  zones: Zone[];
 
   // Helper functions
   refreshData: () => Promise<void>;
@@ -376,6 +472,10 @@ export function useDojoHook(): UseDojoReturn {
   const [factionReputations, setFactionReputations] = useState<
     FactionReputation[]
   >([]);
+  const [playerProgression, setPlayerProgression] = useState<PlayerProgression | null>(null);
+  const [combatEntities, setCombatEntities] = useState<CombatEntity[]>([]);
+  const [marketListings, setMarketListings] = useState<MarketListing[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
 
   const accountAddress = account?.address || null;
   const isConnected = !!account && !!accountAddress;
@@ -584,6 +684,676 @@ export function useDojoHook(): UseDojoReturn {
     [account, accountAddress, sdk, executeSystem]
   );
 
+  const sellPotion = useCallback(
+    async (potionId: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const potionIdFelt = BigInt(potionId);
+        await executeSystem(
+          "wc-sell_system",
+          "sell_potion",
+          [potionIdFelt],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const attack = useCallback(
+    async (targetId: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const targetIdFelt = BigInt(targetId);
+        await executeSystem(
+          "wc-combat_system",
+          "attack",
+          [targetIdFelt],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const craft = useCallback(
+    async (recipeId: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const recipeIdFelt = BigInt(recipeId);
+        await executeSystem(
+          "wc-crafting_system",
+          "craft",
+          [recipeIdFelt],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const listItem = useCallback(
+    async (itemSlot: number, price: bigint): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-economy_system",
+          "list_item",
+          [itemSlot, price],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const buyItem = useCallback(
+    async (listingId: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const listingIdFelt = BigInt(listingId);
+        await executeSystem(
+          "wc-economy_system",
+          "buy_item",
+          [listingIdFelt],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const cancelListing = useCallback(
+    async (listingId: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const listingIdFelt = BigInt(listingId);
+        await executeSystem(
+          "wc-economy_system",
+          "cancel_listing",
+          [listingIdFelt],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const joinFaction = useCallback(
+    async (faction: Faction): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-faction_system",
+          "join_faction",
+          [faction],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const increaseReputation = useCallback(
+    async (faction: Faction, amount: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-faction_system",
+          "increase_reputation",
+          [faction, amount],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const applyFactionBonus = useCallback(
+    async (playerAddress: string): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-faction_system",
+          "apply_faction_bonus",
+          [playerAddress],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const addXp = useCallback(
+    async (amount: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-progression_system",
+          "add_xp",
+          [amount],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const getLevel = useCallback(
+    async (playerAddress: string): Promise<number> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      // Note: This requires a view/call contract method, not a write transaction
+      // For now, return 0 as placeholder - actual implementation needs SDK query support
+      console.warn("getLevel requires view/call contract support, not yet implemented");
+      return 0;
+    },
+    [account, accountAddress, sdk]
+  );
+
+  const tickRegeneration = useCallback(
+    async (): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-resource_regeneration_system",
+          "tick_regeneration",
+          [],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const enterZone = useCallback(
+    async (zoneId: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-zone_system",
+          "enter_zone",
+          [zoneId],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const explore = useCallback(
+    async (): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-zone_system",
+          "explore",
+          [],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  // Admin System Functions
+  const createCombatEntity = useCallback(
+    async (entityType: CombatEntityType, health: number, attack: number, defense: number): Promise<string> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        // ID is generated in Cairo, no need to pass it
+        const result = await executeSystem(
+          "wc-admin_system",
+          "create_combat_entity",
+          [entityType, health, attack, defense],
+          account
+        );
+        
+        // The contract returns the generated ID
+        // We'll need to get it from the transaction result
+        // For now, return a placeholder - in production you'd parse the transaction receipt
+        return "0"; // TODO: Extract from transaction result
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const createCreatureLoot = useCallback(
+    async (creatureId: string, rewardGold: number, rewardItem: IngredientType, quantity: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const creatureIdFelt = BigInt(creatureId);
+        await executeSystem(
+          "wc-admin_system",
+          "create_creature_loot",
+          [creatureIdFelt, rewardGold, rewardItem, quantity],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const createCraftRecipe = useCallback(
+    async (resultType: CraftResultType, difficulty: number, baseValue: number): Promise<string> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        // ID is generated in Cairo
+        await executeSystem(
+          "wc-admin_system",
+          "create_craft_recipe",
+          [resultType, difficulty, baseValue],
+          account
+        );
+        return "0"; // ID generated in Cairo
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const addCraftIngredient = useCallback(
+    async (recipeId: string, ingredientType: IngredientType, quantity: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const recipeIdFelt = BigInt(recipeId);
+        await executeSystem(
+          "wc-admin_system",
+          "add_craft_ingredient",
+          [recipeIdFelt, ingredientType, quantity],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const createZone = useCallback(
+    async (zoneId: number, zoneType: number, dangerLevel: number, nodeSpawnRate: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        await executeSystem(
+          "wc-admin_system",
+          "create_zone",
+          [zoneId, zoneType, dangerLevel, nodeSpawnRate],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const createPotionRecipe = useCallback(
+    async (name: string, effect: number, difficulty: number, baseTime: bigint, baseValue: bigint): Promise<string> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        // ID is generated in Cairo
+        const nameFelt = stringToFelt(name);
+        await executeSystem(
+          "wc-admin_system",
+          "create_potion_recipe",
+          [nameFelt, effect, difficulty, baseTime, baseValue],
+          account
+        );
+        return "0"; // ID generated in Cairo
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const addRecipeIngredient = useCallback(
+    async (recipeId: string, ingredientType: IngredientType, quantity: number): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const recipeIdFelt = BigInt(recipeId);
+        await executeSystem(
+          "wc-admin_system",
+          "add_recipe_ingredient",
+          [recipeIdFelt, ingredientType, quantity],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
+  const createCustomer = useCallback(
+    async (faction: Faction, reputationReq: number, preferredRecipe: string): Promise<string> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error("SDK not initialized. Please wait for the SDK to load.");
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        // ID is generated in Cairo
+        const preferredRecipeFelt = BigInt(preferredRecipe);
+        await executeSystem(
+          "wc-admin_system",
+          "create_customer",
+          [faction, reputationReq, preferredRecipeFelt],
+          account
+        );
+        return "0"; // ID generated in Cairo
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
   // Fetch data from Torii using SDK's query capabilities
   useEffect(() => {
     if (!sdk || !accountAddress) return;
@@ -632,6 +1402,29 @@ export function useDojoHook(): UseDojoReturn {
     forage: forageAction,
     startBrew,
     finishBrew,
+    sellPotion,
+    attack,
+    craft,
+    listItem,
+    buyItem,
+    cancelListing,
+    joinFaction,
+    increaseReputation,
+    applyFactionBonus,
+    addXp,
+    getLevel,
+    tickRegeneration,
+    enterZone,
+    explore,
+    // Admin functions
+    createCombatEntity,
+    createCreatureLoot,
+    createCraftRecipe,
+    addCraftIngredient,
+    createZone,
+    createPotionRecipe,
+    addRecipeIngredient,
+    createCustomer,
     isPending,
     error,
     // SDK is ready if we have SDK, account with execute method, and manifest
@@ -643,6 +1436,10 @@ export function useDojoHook(): UseDojoReturn {
     cauldrons,
     potions,
     factionReputations,
+    playerProgression,
+    combatEntities,
+    marketListings,
+    zones,
     refreshData,
   };
 }
