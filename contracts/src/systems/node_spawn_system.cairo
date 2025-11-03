@@ -54,7 +54,7 @@ pub mod node_spawn_system {
             };
 
             world.write_model(@node);
-            dojo::print!("Ingredient node spawned successfully!");
+            // dojo::print!("Ingredient node spawned successfully!");
         }
     }
 

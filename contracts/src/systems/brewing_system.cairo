@@ -40,20 +40,20 @@ pub mod brewing_system {
     impl BrewingSystemImpl of IBrewingSystem<ContractState> {
         fn start_brew(ref self: ContractState, cauldron_id: felt252, recipe_id: felt252) {
 
-            dojo::println!(" Starting brew process... ");
+            // dojo::println!(" Starting brew process... ");
             let mut world = self.world_default();
 
             let player_addr = starknet::get_caller_address();
 
             let mut cauldron: Cauldron = world.read_model((player_addr, cauldron_id));
 
-            dojo::println!(" Cauldron fetched");
+            // dojo::println!(" Cauldron fetched");
             let recipe: Recipe = world.read_model(recipe_id);
-            dojo::println!(" Recipe fetched");
+            // dojo::println!(" Recipe fetched");
             let _player: Player = world.read_model(player_addr);
-            dojo::println!(" Player fetched");
+            // dojo::println!(" Player fetched");
             let inventory: Inventory = world.read_model(player_addr);
-            dojo::println!(" Inventory fetched");
+            // dojo::println!(" Inventory fetched");
 
             // --- Ownership & state checks ---
             if cauldron.owner != player_addr {
@@ -63,7 +63,7 @@ pub mod brewing_system {
                 panic!("Cauldron is already brewing!");
             }
 
-            dojo::println!(" Starting brew for recipe ID: {:?} ", recipe_id);
+            // dojo::println!(" Starting brew for recipe ID: {:?} ", recipe_id);
 
             // --- Check ingredient requirements ---
             let required_ingredients: Array<RecipeIngredient> = self.get_requirements(recipe_id, ref world);
@@ -98,7 +98,7 @@ pub mod brewing_system {
                 }
 
                 if total_owned < req_qty {
-                    dojo::print!("Missing required ingredient!");
+                    // dojo::print!("Missing required ingredient!");
                     missing = true;
                 }
 
@@ -128,7 +128,7 @@ pub mod brewing_system {
             cauldron.busy = true;
 
             world.write_model(@cauldron);
-            dojo::print!("Brewing started successfully!");
+            // dojo::print!("Brewing started successfully!");
         }
 
         fn finish_brew(ref self: ContractState, cauldron_id: felt252) {
@@ -158,9 +158,9 @@ pub mod brewing_system {
 
             if success_chance >= 5 {
                 player.gold = player.gold.saturating_add(recipe.base_value);
-                dojo::print!("Brew successful!");
+                // dojo::print!("Brew successful!");
             } else {
-                dojo::print!("Brew failed!");
+                // dojo::print!("Brew failed!");
             }
 
             // --- Create potion ---

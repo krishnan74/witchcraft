@@ -88,7 +88,7 @@ pub mod forage_system {
 
             if node.quantity == 0 {
                 node.active = false; // mark as inactive (can be replaced later)
-                dojo::print!("This node has been depleted!");
+                // dojo::print!("This node has been depleted!");
             } else {
                 node.respawn_epoch = current_block.into() + NODE_RESPAWN_DURATION;
             }
@@ -99,7 +99,7 @@ pub mod forage_system {
             player.stamina = player.stamina.saturating_sub(FORAGE_STAMINA_COST);
             world.write_model(@player);
 
-            dojo::print!("You successfully foraged an ingredient!");
+            // dojo::print!("You successfully foraged an ingredient!");
         }
     }
 

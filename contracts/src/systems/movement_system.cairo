@@ -67,7 +67,7 @@ pub mod movement_system {
             world.write_model(@player);
             world.write_model(@position);
 
-            dojo::print!("Player moved successfully!");
+            // dojo::print!("Player moved successfully!");
         }
     }
 

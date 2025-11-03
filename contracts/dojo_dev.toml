@@ -8,14 +8,14 @@ default = "wc"
 
 [env]
 # Sepolia Environment
-rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
-account_address=  "0x0721834c557ce689176a2e66370585777ed82a916489dbe41d35acbe636cd55a"
-private_key = "0x05573d43dcfffbc5853a2feb368f0d39f2c01bab07babc98dabdc6dfc66cdee0"
+#rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+#account_address=  "0x0721834c557ce689176a2e66370585777ed82a916489dbe41d35acbe636cd55a"
+#private_key = "0x05573d43dcfffbc5853a2feb368f0d39f2c01bab07babc98dabdc6dfc66cdee0"
 
 # Katana Environment
-# rpc_url = "http://localhost:5050/"
-# account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-# private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+rpc_url = "http://localhost:5050/"
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 RUST_BACKTRACE = 1
 [writers]
 "wc" = [ "wc-brewing_system", "wc-forage_system", "wc-movement_system", "wc-node_spawn_system", "wc-spawn_system"]

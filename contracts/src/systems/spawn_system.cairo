@@ -30,7 +30,7 @@ pub mod spawn_system {
             let mut world = self.world_default();
             let player_addr = starknet::get_caller_address();
 
-            println!(" Caller address from SpawnSystem: {:?}", player_addr);
+            // println!(" Caller address from SpawnSystem: {:?}", player_addr);
 
             // // Prevent duplicate spawns
             // if world.has::<Player>(player_addr) {
@@ -48,7 +48,7 @@ pub mod spawn_system {
             };
             world.write_model(@player);
 
-            println!(" --- Player {} spawned with address {:?} --- ", player.name, player.addr);
+            // println!(" --- Player {} spawned with address {:?} --- ", player.name, player.addr);
 
 
             // Set initial position
@@ -60,7 +60,7 @@ pub mod spawn_system {
             };
             world.write_model(@position);
 
-            println!(" --- Player {} position set at ({}, {}) --- ", name, position.x, position.y);
+            // println!(" --- Player {} position set at ({}, {}) --- ", name, position.x, position.y);
 
             // Create inventory
             let inventory = Inventory {
@@ -70,7 +70,7 @@ pub mod spawn_system {
             };
             world.write_model(@inventory);
 
-            println!(" --- Player {} inventory created with capacity {} --- ", name, inventory.capacity);
+            // println!(" --- Player {} inventory created with capacity {} --- ", name, inventory.capacity);
 
             // Initialize faction reputations
             let demon_rep = FactionReputation { player: player_addr, faction: Faction::Demon, reputation: 0 };
@@ -78,16 +78,16 @@ pub mod spawn_system {
             let vampire_rep = FactionReputation { player: player_addr, faction: Faction::Vampire, reputation: 0 };
             let ghost_rep = FactionReputation { player: player_addr, faction: Faction::Ghost, reputation: 0 };
 
-            println!(" --- Initializing faction reputations for player {} --- ", name);
+            // println!(" --- Initializing faction reputations for player {} --- ", name);
 
             world.write_model(@demon_rep);
             world.write_model(@zombie_rep);
             world.write_model(@vampire_rep);
             world.write_model(@ghost_rep);
 
-            println!(" --- Faction reputations initialized for player {} --- ", name);
+            // println!(" --- Faction reputations initialized for player {} --- ", name);
 
-            dojo::print!("Spawned new witch at CursedVillage!");
+            // dojo::print!("Spawned new witch at CursedVillage!");
         }
     }
 
