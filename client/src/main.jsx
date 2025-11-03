@@ -17,6 +17,13 @@ import { dojoConfig } from "./dojoConfig.ts";
 import { setupWorld } from "./dojoSetup.ts";
  
 async function main() {
+    // Detect if running locally or on Cartridge hosting
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || 
+       window.location.hostname === '127.0.0.1' ||
+       window.location.hostname === '' ||
+       window.location.hostname.includes('localhost'));
+    
     // Load manifest dynamically to avoid Vite's static JSON parsing issues with large files
     let manifest;
     
@@ -99,17 +106,18 @@ async function main() {
     }
     
     // Initialize the SDK with configuration options
-    // Use the original computed values and config.manifest from createDojoConfig
+    // Match dojo-intro pattern: don't pass rpcUrl to SDK (only to Controller)
+    // SDK only needs worldAddress and toriiUrl for queries/subscriptions
     const sdkInitConfig = {
         client: {
             worldAddress: finalWorldAddress,
             toriiUrl: finalToriiUrl,
-            rpcUrl: finalRpcUrl,
+            // Note: rpcUrl is NOT passed to SDK init - Controller handles RPC
         },
         domain: {
             name: "Witchcraft",
             version: "1.0",
-            chainId: "SN_SEPOLIA",
+            chainId: "SN_SEPOLIA", 
             revision: "1",
         },
         manifest: config.manifest,
@@ -122,9 +130,9 @@ async function main() {
     
     console.log("Initializing SDK with config:", {
         worldAddress: sdkInitConfig.client.worldAddress,
-        rpcUrl: sdkInitConfig.client.rpcUrl,
         toriiUrl: sdkInitConfig.client.toriiUrl,
-        hasManifest: !!sdkInitConfig.manifest
+        hasManifest: !!sdkInitConfig.manifest,
+        chainId: sdkInitConfig.domain.chainId
     });
     
     // Build Controller policies from manifest (we already have manifest loaded)
@@ -160,11 +168,15 @@ async function main() {
     }
     
     // Initialize Cartridge Controller for wallet connection with policies
+    // Match dojo-intro pattern: pass chainId based on environment
     const controller = new Controller({
-        // Configure chains
+        // Configure chains - match dojo-intro pattern
         chains: [
             { rpcUrl: finalRpcUrl },
         ],
+        // Set defaultChainId based on environment
+        // KATANA = 0x4b4154414e41, SN_SEPOLIA = 0x534e5f5345504f4c4941
+        defaultChainId: '0x534e5f5345504f4c4941',
         // Add policies for secure transaction approvals
         ...(Object.keys(policies.contracts).length > 0 && { policies }),
     });

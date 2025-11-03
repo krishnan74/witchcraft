@@ -1,0 +1,17 @@
+[world]
+name = "Witchcraft"
+description = "Witchcraft Dojo Sepolia Deployment"
+seed = "witchcraft"
+
+[namespace]
+default = "wc"
+
+[env]
+# rpc_url = ""         # env: STARKNET_RPC_URL
+# account_address = "" # env: DOJO_ACCOUNT_ADDRESS
+# private_key = ""     # env: DOJO_PRIVATE_KEY
+# world_address = ""   # Will be populated after first deployment
+
+[writers]
+"wc" = [ "wc-brewing_system", "wc-forage_system", "wc-movement_system", "wc-node_spawn_system", "wc-spawn_system"]
+

@@ -3,7 +3,7 @@ import { useDojoHook } from '../hooks/useDojo.ts'
 
 export default function SpawnPlayerButton() {
   const { spawnPlayer, isConnected, isPending, error, accountAddress, isSdkReady, account } = useDojoHook()
-  const [playerName, setPlayerName] = useState('TestPlayer')
+  const [playerName, setPlayerName] = useState('johnn')
   const [success, setSuccess] = useState(false)
 
   // Debug: log component state

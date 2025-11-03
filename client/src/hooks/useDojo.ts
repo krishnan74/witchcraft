@@ -281,41 +281,8 @@ export function useDojoHook(): UseDojoReturn {
 
         console.log("Transaction sent:", tx);
 
-        // Wait for transaction receipt to check for execution errors
-        if (tx && typeof tx.wait === "function") {
-          try {
-            const receipt = await tx.wait();
-            console.log("Transaction receipt:", receipt);
-
-            // Check if transaction was reverted
-            if (
-              receipt.status === "REJECTED" ||
-              receipt.execution_status === "REVERTED"
-            ) {
-              throw new Error(
-                `Transaction reverted: ${
-                  receipt.revert_reason || "Unknown reason"
-                }`
-              );
-            }
-
-            return receipt;
-          } catch (receiptError: any) {
-            console.error("Transaction receipt error:", receiptError);
-
-            // Extract error message from receipt error
-            if (receiptError.message) {
-              throw new Error(`Transaction failed: ${receiptError.message}`);
-            }
-            if (receiptError.revert_reason) {
-              throw new Error(
-                `Transaction reverted: ${receiptError.revert_reason}`
-              );
-            }
-            throw receiptError;
-          }
-        }
-
+        // Match dojo-intro pattern: don't wait for receipt, just return
+        // Controller will handle transaction execution and show errors in UI
         return tx;
       } catch (executeError: any) {
         console.error("Execute error details:", executeError);
