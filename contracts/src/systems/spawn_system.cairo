@@ -1,5 +1,5 @@
 use crate::models::{
-    Player, Position, Inventory, FactionReputation, ZoneType, Faction,
+    Player, Position, Inventory, FactionReputation, ZoneType, Faction, PlayerProgression,
 };
 
 #[starknet::interface]
@@ -9,7 +9,7 @@ pub trait ISpawnSystem<T> {
 
 #[dojo::contract]
 pub mod spawn_system {
-    use super::{ISpawnSystem, Player, Position, Inventory, FactionReputation, ZoneType, Faction};
+    use super::{ISpawnSystem, Player, Position, Inventory, FactionReputation, ZoneType, Faction, PlayerProgression};
     use dojo::model::ModelStorage;
 
     // Constants / Game Balancing
@@ -18,9 +18,12 @@ pub mod spawn_system {
     pub const INIT_Y: u32 = 5;
     pub const START_GOLD: u128 = 100;
     pub const START_HEALTH: u16 = 100;
-    pub const START_STAMINA: u16 = 50;
+    pub const START_STAMINA: u16 = 100;
     pub const START_REPUTATION: i32 = 0;
     pub const START_ZONE: ZoneType = ZoneType::CursedVillage;
+    pub const START_LEVEL: u16 = 1;
+    pub const START_XP: u32 = 0;
+    pub const START_NEXT_LEVEL_XP: u32 = 100;
 
     // Implementation
 
@@ -37,6 +40,8 @@ pub mod spawn_system {
             //     panic!("Player already exists");
             // }
 
+            
+            // println!(" --- Spawning new player: {} --- ", name);
             // Initialize player stats
             let mut player = Player {
                 addr: player_addr,
@@ -84,6 +89,15 @@ pub mod spawn_system {
             world.write_model(@zombie_rep);
             world.write_model(@vampire_rep);
             world.write_model(@ghost_rep);
+
+            // Initialize progression
+            let progression = PlayerProgression {
+                player: player_addr,
+                level: START_LEVEL,
+                xp: START_XP,
+                next_level_xp: START_NEXT_LEVEL_XP,
+            };
+            world.write_model(@progression);
 
             // println!(" --- Faction reputations initialized for player {} --- ", name);
 

@@ -4,7 +4,7 @@ use crate::models::{
     Inventory,
     IngredientNode,
     IngredientItem,
-    IngredientType,
+    PlayerProgression,
 };
 
 #[starknet::interface]
@@ -21,15 +21,15 @@ pub mod forage_system {
         Inventory,
         IngredientNode,
         IngredientItem,
-        IngredientType,
+        PlayerProgression,
     };
     use dojo::model::ModelStorage;
-    use starknet::ContractAddress;
-    use core::num::traits::SaturatingSub;
+    use core::num::traits::{SaturatingSub, SaturatingAdd};
 
     // Game Balancing Constants
     pub const FORAGE_STAMINA_COST: u16 = 10;
     pub const NODE_RESPAWN_DURATION: u64 = 300;
+    pub const FORAGE_XP_REWARD: u32 = 5;
 
     #[abi(embed_v0)]
     impl ForageSystemImpl of IForageSystem<ContractState> {
@@ -99,6 +99,9 @@ pub mod forage_system {
             player.stamina = player.stamina.saturating_sub(FORAGE_STAMINA_COST);
             world.write_model(@player);
 
+            // --- Award XP for foraging ---
+            self.award_xp(player_addr, FORAGE_XP_REWARD, ref world);
+
             // dojo::print!("You successfully foraged an ingredient!");
         }
     }
@@ -106,6 +109,40 @@ pub mod forage_system {
     // Internal helper for world reference
     #[generate_trait]
     impl InternalImpl of InternalTrait {
+        fn award_xp(
+            self: @ContractState,
+            player_addr: starknet::ContractAddress,
+            amount: u32,
+            ref world: dojo::world::WorldStorage,
+        ) {
+            // Load or create progression
+            let mut progression: PlayerProgression = world.read_model(player_addr);
+            
+            // Check if it exists (player matches)
+            if progression.player != player_addr {
+                progression = PlayerProgression {
+                    player: player_addr,
+                    level: 1,
+                    xp: 0,
+                    next_level_xp: 100,
+                };
+            }
+
+            // Increase XP
+            progression.xp = progression.xp.saturating_add(amount);
+
+            // Check for level up (simplified - full logic in progression_system)
+            if progression.xp >= progression.next_level_xp && progression.level < 50 {
+                progression.xp = progression.xp.saturating_sub(progression.next_level_xp);
+                progression.level += 1;
+                // Calculate next level XP requirement
+                let level_factor = (progression.level.into() * 15) / 100;
+                progression.next_level_xp = 100.saturating_add(level_factor);
+            }
+
+            world.write_model(@progression);
+        }
+
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
             self.world(@"wc")
         }

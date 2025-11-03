@@ -7,6 +7,7 @@ use crate::models::{
     IngredientItem,
     Potion,
     IngredientType,
+    PlayerProgression,
 };
 
 #[starknet::interface]
@@ -27,6 +28,7 @@ pub mod brewing_system {
         IngredientItem,
         Potion,
         IngredientType,
+        PlayerProgression,
     };
 
     use dojo::model::ModelStorage;
@@ -35,6 +37,8 @@ pub mod brewing_system {
     use core::array::ArrayTrait; // ✅ correct import path
 
     pub const BASE_SUCCESS_MULTIPLIER: u8 = 10;
+    pub const BREW_SUCCESS_XP: u32 = 15;
+    pub const BREW_FAILURE_XP: u32 = 5;
 
     #[abi(embed_v0)]
     impl BrewingSystemImpl of IBrewingSystem<ContractState> {
@@ -155,15 +159,16 @@ pub mod brewing_system {
             // --- Success chance calculation ---
             let success_chance: u8 = (cauldron.quality * BASE_SUCCESS_MULTIPLIER) / recipe.difficulty;
             let potion_quality: u8 = if success_chance >= 5 { 80 } else { 20 };
+            let brew_successful = success_chance >= 5;
 
-            if success_chance >= 5 {
+            if brew_successful {
                 player.gold = player.gold.saturating_add(recipe.base_value);
                 // dojo::print!("Brew successful!");
             } else {
                 // dojo::print!("Brew failed!");
             }
 
-            // --- Create potion ---
+            // --- Create potion (even on failure for XP tracking) ---
             let potion_id: felt252 = (player_addr.into() + cauldron_id).into();
             let potion = Potion {
                 potion_id,
@@ -174,6 +179,10 @@ pub mod brewing_system {
                 value: recipe.base_value,
             };
             world.write_model(@potion);
+
+            // --- Award XP based on success/failure ---
+            let xp_amount = if brew_successful { BREW_SUCCESS_XP } else { BREW_FAILURE_XP };
+            self.award_xp(player_addr, xp_amount, ref world);
 
             // --- Reset cauldron ---
             cauldron.busy = false;
@@ -243,6 +252,40 @@ pub mod brewing_system {
             }
         }
 
+
+        fn award_xp(
+            self: @ContractState,
+            player_addr: ContractAddress,
+            amount: u32,
+            ref world: dojo::world::WorldStorage,
+        ) {
+            // Load or create progression
+            let mut progression: PlayerProgression = world.read_model(player_addr);
+            
+            // Check if it exists (player matches)
+            if progression.player != player_addr {
+                progression = PlayerProgression {
+                    player: player_addr,
+                    level: 1,
+                    xp: 0,
+                    next_level_xp: 100,
+                };
+            }
+
+            // Increase XP
+            progression.xp = progression.xp.saturating_add(amount);
+
+            // Check for level up (simplified - full logic in progression_system)
+            if progression.xp >= progression.next_level_xp && progression.level < 50 {
+                progression.xp = progression.xp.saturating_sub(progression.next_level_xp);
+                progression.level += 1;
+                // Calculate next level XP requirement
+                let level_factor = (progression.level.into() * 15) / 100;
+                progression.next_level_xp = 100.saturating_add(level_factor);
+            }
+
+            world.write_model(@progression);
+        }
 
         fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
             self.world(@"wc")
