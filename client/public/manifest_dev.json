@@ -2374,8 +2374,208 @@
       ]
     },
     {
-      "address": "0x7071ccf284756abcd3055aff728363dde551454ec49ec51037ffb1f47903eda",
-      "class_hash": "0x18ec216120d460c9ec857b8ab1fe829ac88dcdacd7937f726d65e8cce4439cc",
+      "address": "0x4538e992b89bc994b706a61f233b9fc9a0709ce2c65fd0690180d96ede64f11",
+      "class_hash": "0x244f03eb0c35bcc19c0b3f29627fcf207fef0decdf200e47f5f70d3ba25caf5",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "sell_system__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "DojoDeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "SellImpl",
+          "interface_name": "witchcraft::systems::sell_system::ISellSystem"
+        },
+        {
+          "type": "interface",
+          "name": "witchcraft::systems::sell_system::ISellSystem",
+          "items": [
+            {
+              "type": "function",
+              "name": "sell_potion",
+              "inputs": [
+                {
+                  "name": "potion_id",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "view"
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "witchcraft::systems::sell_system::sell_system::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "wc-sell_system",
+      "selector": "0xc9914dd5c216c446812bf63c4ab8f10210db3cb03e1a28d0d95abf8f9ea02a",
+      "systems": [
+        "sell_potion",
+        "upgrade"
+      ]
+    },
+    {
+      "address": "0xaa9fa7c87f05c902f491175bd14f574ea8bff441d08739b5d6326f5a80d6f6",
+      "class_hash": "0x2e3322bc6bc4b5d03e0577c6eaab9bfe645df17b1b0d55b0b811447a924607a",
       "abi": [
         {
           "type": "impl",
@@ -2611,6 +2811,12 @@
       "class_hash": "0x5e47f677da46cf431170be4c8d2457527f1029c1b3fbe25d15a604ead15182e",
       "tag": "wc-Inventory",
       "selector": "0x62c7099969d488f65407fb9455e2f363c5b97b582e93056211c42e9332555fa"
+    },
+    {
+      "members": [],
+      "class_hash": "0x6bbd055bc0504d1ac1b475d178c68f070fbf7e5332a5b75b5e016ca734ccd25",
+      "tag": "wc-MarketListing",
+      "selector": "0x3ab34af6855a4d5928c106e59e7c240d0bde06a4236b99d91ec0aefaab278aa"
     },
     {
       "members": [],

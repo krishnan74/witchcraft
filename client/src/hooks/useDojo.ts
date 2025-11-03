@@ -82,6 +82,17 @@ export enum Direction {
   Down = 3,
 }
 
+// IngredientType enum values (matching Cairo IngredientType enum)
+export enum IngredientType {
+  MandrakeRoot = 0,
+  GraveDust = 1,
+  BatWing = 2,
+  GhostMushroom = 3,
+  WyrmScale = 4,
+  VampireBloom = 5,
+  PumpkinSeed = 6,
+}
+
 export interface UseDojoReturn {
   // Connection state
   account: AccountInterface | null;
@@ -91,6 +102,7 @@ export interface UseDojoReturn {
   // System functions
   spawnPlayer: (name: string) => Promise<void>;
   movePlayer: (direction: Direction) => Promise<void>;
+  spawnNode: (x: number, y: number, ingredientType: IngredientType, rarity: number, quantity: number) => Promise<void>;
   forage: () => Promise<void>;
   startBrew: (cauldronId: string, recipeId: string) => Promise<void>;
   finishBrew: (cauldronId: string) => Promise<void>;
@@ -439,6 +451,45 @@ export function useDojoHook(): UseDojoReturn {
     [account, accountAddress, sdk, executeSystem]
   );
 
+  const spawnNode = useCallback(
+    async (
+      x: number,
+      y: number,
+      ingredientType: IngredientType,
+      rarity: number,
+      quantity: number
+    ): Promise<void> => {
+      if (!account || !accountAddress) {
+        throw new Error("Account not connected");
+      }
+      if (!sdk) {
+        throw new Error(
+          "SDK not initialized. Please wait for the SDK to load."
+        );
+      }
+
+      setIsPending(true);
+      setError(null);
+
+      try {
+        // Execute spawn_node system
+        await executeSystem(
+          "wc-node_spawn_system",
+          "spawn_node",
+          [x, y, ingredientType, rarity, quantity],
+          account
+        );
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error);
+        throw error;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [account, accountAddress, sdk, executeSystem]
+  );
+
   const forageAction = useCallback(async (): Promise<void> => {
     if (!account || !accountAddress) {
       throw new Error("Account not connected");
@@ -577,6 +628,7 @@ export function useDojoHook(): UseDojoReturn {
     accountAddress,
     spawnPlayer,
     movePlayer,
+    spawnNode,
     forage: forageAction,
     startBrew,
     finishBrew,

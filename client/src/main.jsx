@@ -145,6 +145,7 @@ async function main() {
         const systemContracts = [
             { tag: 'wc-spawn_system', name: 'Spawn System', description: 'Player spawning system', entrypoints: ['spawn_player'] },
             { tag: 'wc-movement_system', name: 'Movement System', description: 'Player movement system', entrypoints: ['move_player'] },
+            { tag: 'wc-node_spawn_system', name: 'Node Spawn System', description: 'Ingredient node spawning system', entrypoints: ['spawn_node'] },
             { tag: 'wc-forage_system', name: 'Forage System', description: 'Ingredient foraging system', entrypoints: ['forage'] },
             { tag: 'wc-brewing_system', name: 'Brewing System', description: 'Potion brewing system', entrypoints: ['start_brew', 'finish_brew'] },
         ];

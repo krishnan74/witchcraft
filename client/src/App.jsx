@@ -7,6 +7,7 @@ import ShopPopup from './components/ShopPopup'
 import NightBeginsPopup from './components/NightBeginsPopup'
 import SpawnPlayerButton from './components/SpawnPlayerButton'
 import WalletConnect from './components/WalletConnect'
+import MvpTestFlow from './components/MvpTestFlow'
 import { startBrew, finishBrew } from './utils/brewingSystem'
 import { initializeCycle, updateCycle, getTimeRemaining } from './utils/dayNightCycle'
 import { generateCustomerOrders } from './utils/shopSystem'
@@ -240,9 +241,13 @@ function App({ controller }) {
       </div>
 
       {/* Dojo Integration Test Button */}
-      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
-        <SpawnPlayerButton />
-      </div>
+          <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+            <SpawnPlayerButton />
+          </div>
+
+          <div style={{ position: 'fixed', bottom: '20px', left: '20px', zIndex: 1000, maxWidth: '850px' }}>
+            <MvpTestFlow />
+          </div>
 
       <div className="game-container">
         <GameCanvas ref={canvasRef} />
