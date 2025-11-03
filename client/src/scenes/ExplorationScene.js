@@ -22,12 +22,16 @@ export class ExplorationScene extends BaseScene {
     this.biomes = [] // Array to hold biome entities
     this.nearbyBiome = null // Currently nearby biome for popup
     this.ingredients = [] // Array to hold ingredient entities
+    this.npcs = [] // Array to hold NPC entities
     this.nearbyIngredient = null // Currently nearby ingredient for collection
     this.ingredientSpawnTimer = 0 // Timer for spawning ingredients at intervals
     this.ingredientSpawnInterval = 15000 // Spawn new ingredients every 20 seconds
     // World bounds - same as canvas size
     this.worldWidth = 1920
     this.worldHeight = 1080
+    this.playerDead = false
+    this.lastMouseState = false // Track mouse state for click detection
+    this.playerAttackRange = 100 // Distance player can attack NPCs
   }
 
   async onEnter() {
@@ -166,6 +170,9 @@ export class ExplorationScene extends BaseScene {
 
     // Create and place biomes (after buildings so we can avoid overlap)
     await this.initializeBiomes()
+
+    // Create and place NPCs near biomes
+    await this.initializeNPCs()
 
     // Clear any old ingredients and spawn fresh ones for current day
     this.ingredients = []
@@ -338,6 +345,95 @@ export class ExplorationScene extends BaseScene {
     })))
   }
 
+  async initializeNPCs() {
+    // Load NPC attack animation frames (1.png, 2.png, 3.png, 4.png)
+    const npcImagePaths = [
+      '/sprites/npc/1.png',
+      '/sprites/npc/2.png',
+      '/sprites/npc/3.png',
+      '/sprites/npc/4.png'
+    ]
+
+    let npcAttackFrames = []
+    try {
+      // Load all NPC attack frames
+      for (const path of npcImagePaths) {
+        const img = new Image()
+        await new Promise((resolve, reject) => {
+          img.onload = resolve
+          img.onerror = reject
+          img.src = path
+        })
+        npcAttackFrames.push(img)
+      }
+      console.log(`✅ NPC attack frames loaded: ${npcAttackFrames.length} frames`)
+    } catch (error) {
+      console.warn('⚠️ Failed to load NPC sprites:', error)
+      return // Don't create NPCs if sprites failed to load
+    }
+
+    // Place NPCs near each biome (outside or near edges)
+    // Each biome gets exactly 1 NPC placed around it
+    for (const biome of this.biomes) {
+      // Place NPCs at various positions around the biome
+      const npcPositions = [
+        // Left side of biome
+        { x: biome.x - 100, y: biome.y + biome.height / 2 },
+        // Right side of biome
+        { x: biome.x + biome.width + 50, y: biome.y + biome.height / 2 },
+        // Top of biome
+        { x: biome.x + biome.width / 2, y: biome.y - 100 },
+        // Bottom of biome (only for larger biomes)
+        ...(biome.width > 200 ? [{ x: biome.x + biome.width / 2, y: biome.y + biome.height + 50 }] : [])
+      ]
+
+      // Create exactly 1 NPC per biome (randomly choose one position)
+      const randomPositionIndex = Math.floor(Math.random() * npcPositions.length)
+      const selectedPositions = [npcPositions[randomPositionIndex]]
+
+      for (const pos of selectedPositions) {
+        // Make sure NPC is within world bounds
+        const npcX = Math.max(50, Math.min(this.worldWidth - 100, pos.x))
+        const npcY = Math.max(50, Math.min(this.worldHeight - 100, pos.y))
+
+        // Create NPC entity
+        const npc = new Entity(npcX, npcY)
+        
+        // Set NPC size based on first frame
+        if (npcAttackFrames[0]) {
+          npc.width = npcAttackFrames[0].width || 64
+          npc.height = npcAttackFrames[0].height || 64
+        }
+
+        // Store attack frames
+        npc.attackFrames = npcAttackFrames
+        npc.currentFrame = 0
+        npc.animationTime = 0
+        npc.frameDuration = 200 // ms per frame (controls attack animation speed)
+        
+        // Store which biome this NPC is guarding
+        npc.guardingBiome = biome.name
+        npc.biome = biome // Reference to the biome entity
+        npc.originalX = npcX // Store original spawn position
+        npc.originalY = npcY
+        npc.detectionRadius = 250 // Distance from biome center to detect player
+        npc.followSpeed = 2.5 // NPC movement speed (slightly slower than player)
+        npc.isFollowing = false // Track if NPC is currently following player
+        npc.attackRange = 70 // Distance to land an attack
+        npc.attackDamage = 10 // Damage per hit
+        npc.attackCooldownMs = 1000 // 1s between hits
+        npc._attackTimerMs = 0
+
+        this.npcs.push(npc)
+        this.entities.push(npc) // Add to entities for update/render
+        
+        console.log(`✅ NPC placed near ${biome.name} at (${Math.round(npcX)}, ${Math.round(npcY)})`)
+      }
+    }
+
+    console.log(`👹 Total NPCs placed: ${this.npcs.length}`)
+  }
+
   /**
    * Spawn a batch of ingredients (one of each type that can spawn today)
    * This is called continuously at intervals
@@ -498,49 +594,55 @@ export class ExplorationScene extends BaseScene {
     const speed = this.speed * (deltaTime / 16.67) // Normalize to 60fps
 
     if (this.player) {
-      this.player.velocity.x = 0
-      this.player.velocity.y = 0
-
-      if (engine.isKeyPressed('KeyW') || engine.isKeyPressed('ArrowUp')) {
-        this.player.velocity.y = -speed
-      }
-      if (engine.isKeyPressed('KeyS') || engine.isKeyPressed('ArrowDown')) {
-        this.player.velocity.y = speed
-      }
-      if (engine.isKeyPressed('KeyA') || engine.isKeyPressed('ArrowLeft')) {
-        this.player.velocity.x = -speed
-        this.player.facingDirection = 'left' // Face left when moving left
-      }
-      if (engine.isKeyPressed('KeyD') || engine.isKeyPressed('ArrowRight')) {
-        this.player.velocity.x = speed
-        this.player.facingDirection = 'right' // Face right when moving right
-      }
-
-      // Update animation based on movement
-      const wasMoving = this.player.velocity.x !== 0 || this.player.velocity.y !== 0
-      
-      if (wasMoving) {
-        this.player.currentAnimation = 'walk'
-        // Animate walk cycle: walk1 → walk2 → walk3 → walk4 → idle → repeat
-        const walkFrames = this.player.animationFrames?.walk || [1, 2, 3, 4, 0]
-        const frameDuration = 150 // ms per frame
-        
-        // Ensure animation time is initialized and continues smoothly
-        if (this.player.animationTime === undefined || this.player.animationTime === null) {
-          this.player.animationTime = 0
-        }
-        
-        // Calculate current frame index and update
-        const frameIndex = Math.floor(this.player.animationTime / frameDuration) % walkFrames.length
-        this.player.currentAnimationFrame = walkFrames[frameIndex]
-        
-        // Continue animation timer
-        this.player.animationTime += deltaTime
+      // If dead, lock the player and skip movement
+      if (this.playerDead) {
+        this.player.velocity.x = 0
+        this.player.velocity.y = 0
       } else {
-        // When not moving, show idle frame
-        this.player.currentAnimation = 'idle'
-        this.player.currentAnimationFrame = 0
-        this.player.animationTime = 0 // Reset animation time when idle
+        this.player.velocity.x = 0
+        this.player.velocity.y = 0
+
+        if (engine.isKeyPressed('KeyW') || engine.isKeyPressed('ArrowUp')) {
+          this.player.velocity.y = -speed
+        }
+        if (engine.isKeyPressed('KeyS') || engine.isKeyPressed('ArrowDown')) {
+          this.player.velocity.y = speed
+        }
+        if (engine.isKeyPressed('KeyA') || engine.isKeyPressed('ArrowLeft')) {
+          this.player.velocity.x = -speed
+          this.player.facingDirection = 'left' // Face left when moving left
+        }
+        if (engine.isKeyPressed('KeyD') || engine.isKeyPressed('ArrowRight')) {
+          this.player.velocity.x = speed
+          this.player.facingDirection = 'right' // Face right when moving right
+        }
+
+        // Update animation based on movement
+        const wasMoving = this.player.velocity.x !== 0 || this.player.velocity.y !== 0
+        
+        if (wasMoving) {
+          this.player.currentAnimation = 'walk'
+          // Animate walk cycle: walk1 → walk2 → walk3 → walk4 → idle → repeat
+          const walkFrames = this.player.animationFrames?.walk || [1, 2, 3, 4, 0]
+          const frameDuration = 150 // ms per frame
+          
+          // Ensure animation time is initialized and continues smoothly
+          if (this.player.animationTime === undefined || this.player.animationTime === null) {
+            this.player.animationTime = 0
+          }
+          
+          // Calculate current frame index and update
+          const frameIndex = Math.floor(this.player.animationTime / frameDuration) % walkFrames.length
+          this.player.currentAnimationFrame = walkFrames[frameIndex]
+          
+          // Continue animation timer
+          this.player.animationTime += deltaTime
+        } else {
+          // When not moving, show idle frame
+          this.player.currentAnimation = 'idle'
+          this.player.currentAnimationFrame = 0
+          this.player.animationTime = 0 // Reset animation time when idle
+        }
       }
 
             // Keep player within world bounds (larger map)
@@ -609,6 +711,197 @@ export class ExplorationScene extends BaseScene {
       this.gameEngine.camera.x = Math.max(0, Math.min(maxCameraX, cameraX))
       this.gameEngine.camera.y = Math.max(0, Math.min(maxCameraY, cameraY))
     }
+
+    // Update NPCs: animations and follow behavior
+    if (this.player) {
+      const playerCenterX = this.player.x + this.player.width / 2
+      const playerCenterY = this.player.y + this.player.height / 2
+
+      this.npcs.forEach(npc => {
+        // Update NPC attack animation
+        if (npc.attackFrames && npc.attackFrames.length > 0) {
+          npc.animationTime += deltaTime
+          
+          // Loop through frames: 1 -> 2 -> 3 -> 4 -> 1 -> ...
+          const frameIndex = Math.floor(npc.animationTime / npc.frameDuration) % npc.attackFrames.length
+          npc.currentFrame = frameIndex
+        }
+
+        // Advance attack cooldown timer
+        npc._attackTimerMs = (npc._attackTimerMs || 0) + deltaTime
+
+        // Check if player is within detection radius of the biome this NPC guards
+        if (npc.biome) {
+          const biomeCenterX = npc.biome.x + npc.biome.width / 2
+          const biomeCenterY = npc.biome.y + npc.biome.height / 2
+          
+          const distanceToBiomeCenter = Math.sqrt(
+            Math.pow(playerCenterX - biomeCenterX, 2) + 
+            Math.pow(playerCenterY - biomeCenterY, 2)
+          )
+
+          // If player is within detection radius, NPC should follow
+          if (distanceToBiomeCenter <= npc.detectionRadius) {
+            npc.isFollowing = true
+            
+            // Move NPC toward player
+            const npcCenterX = npc.x + npc.width / 2
+            const npcCenterY = npc.y + npc.height / 2
+            
+            const dx = playerCenterX - npcCenterX
+            const dy = playerCenterY - npcCenterY
+            const distanceToPlayer = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distanceToPlayer > 10) { // Don't move if very close (prevents jitter)
+              // Normalize direction and apply speed
+              const speed = npc.followSpeed * (deltaTime / 16.67) // Normalize to 60fps
+              npc.velocity.x = (dx / distanceToPlayer) * speed
+              npc.velocity.y = (dy / distanceToPlayer) * speed
+              
+              // Keep NPC within world bounds
+              const newX = npc.x + npc.velocity.x
+              const newY = npc.y + npc.velocity.y
+              if (newX < 0 || newX + npc.width > this.worldWidth) {
+                npc.velocity.x = 0
+              }
+              if (newY < 0 || newY + npc.height > this.worldHeight) {
+                npc.velocity.y = 0
+              }
+            } else {
+              npc.velocity.x = 0
+              npc.velocity.y = 0
+            }
+
+            // Attempt attack if in range and cooldown elapsed
+            if (distanceToPlayer <= npc.attackRange && npc._attackTimerMs >= npc.attackCooldownMs && !this.playerDead) {
+              npc._attackTimerMs = 0
+
+              const currentHealth = (this.gameState?.player?.health ?? 0)
+              const newHealth = Math.max(0, currentHealth - npc.attackDamage)
+
+              // Update React state
+              this.setGameState(prev => ({
+                ...prev,
+                player: {
+                  ...prev.player,
+                  health: newHealth
+                }
+              }))
+              // Keep scene copy in sync immediately
+              if (this.gameState && this.gameState.player) {
+                this.gameState.player.health = newHealth
+              }
+
+              // Handle death
+              if (newHealth <= 0) {
+                this.playerDead = true
+                console.log('💀 Player died')
+              }
+            }
+          } else {
+            // Player left detection radius - return to original position
+            npc.isFollowing = false
+            
+            const npcCenterX = npc.x + npc.width / 2
+            const npcCenterY = npc.y + npc.height / 2
+            const dx = npc.originalX + npc.width / 2 - npcCenterX
+            const dy = npc.originalY + npc.height / 2 - npcCenterY
+            const distanceToHome = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distanceToHome > 5) {
+              // Move back to original position
+              const speed = npc.followSpeed * 0.8 * (deltaTime / 16.67) // Slightly slower return
+              npc.velocity.x = (dx / distanceToHome) * speed
+              npc.velocity.y = (dy / distanceToHome) * speed
+            } else {
+              // Close enough to home, stop moving
+              npc.velocity.x = 0
+              npc.velocity.y = 0
+              npc.x = npc.originalX
+              npc.y = npc.originalY
+            }
+          }
+        }
+      })
+    }
+
+    // Handle left click to kill nearby NPCs (only trigger once per click)
+    const currentMouseState = engine.isMouseDown()
+    const mouseJustClicked = currentMouseState && !this.lastMouseState
+    
+    if (mouseJustClicked && this.player && !this.playerDead) {
+      // Get mouse position in world coordinates
+      const mouseWorldPos = engine.getMouseWorldPos()
+      
+      // Check all NPCs to see if click hit them and they're within attack range
+      // Iterate in reverse to safely remove items
+      for (let i = this.npcs.length - 1; i >= 0; i--) {
+        const npc = this.npcs[i]
+        if (!npc.visible || !npc.active) continue
+        
+        // Check if NPC is within player attack range
+        const playerCenterX = this.player.x + this.player.width / 2
+        const playerCenterY = this.player.y + this.player.height / 2
+        const npcCenterX = npc.x + npc.width / 2
+        const npcCenterY = npc.y + npc.height / 2
+        
+        const distanceToNPC = Math.sqrt(
+          Math.pow(playerCenterX - npcCenterX, 2) + 
+          Math.pow(playerCenterY - npcCenterY, 2)
+        )
+        
+        // Check if click is on the NPC and NPC is within attack range
+        const clickOnNPC = (
+          mouseWorldPos.x >= npc.x &&
+          mouseWorldPos.x <= npc.x + npc.width &&
+          mouseWorldPos.y >= npc.y &&
+          mouseWorldPos.y <= npc.y + npc.height
+        )
+        
+        if (clickOnNPC && distanceToNPC <= this.playerAttackRange) {
+          // Kill the NPC (remove it)
+          npc.visible = false
+          npc.active = false
+          
+          // Remove from arrays
+          this.npcs.splice(i, 1)
+          const entityIndex = this.entities.indexOf(npc)
+          if (entityIndex > -1) {
+            this.entities.splice(entityIndex, 1)
+          }
+          
+          // Restore player health when killing NPC
+          const healthRestored = 15 // Amount of health restored per kill
+          const currentHealth = this.gameState?.player?.health ?? 0
+          const maxHealth = 100 // Max health cap
+          const newHealth = Math.min(maxHealth, currentHealth + healthRestored)
+          
+          // Update game state
+          this.setGameState(prev => ({
+            ...prev,
+            player: {
+              ...prev.player,
+              health: newHealth
+            }
+          }))
+          
+          // Keep scene copy in sync
+          if (this.gameState && this.gameState.player) {
+            this.gameState.player.health = newHealth
+          }
+          
+          // Revive player if they were dead
+          if (this.playerDead && newHealth > 0) {
+            this.playerDead = false
+          }
+          
+          console.log(`💀 NPC killed at (${Math.round(npc.x)}, ${Math.round(npc.y)}) - Health restored: +${healthRestored}`)
+          break // Only kill one NPC per click
+        }
+      }
+    }
+    
+    this.lastMouseState = currentMouseState
 
     // Press 'E' to interact with nearby ingredient or building (if any)
     // Handle E key press (only trigger once, not continuously)
@@ -684,6 +977,25 @@ export class ExplorationScene extends BaseScene {
       ingredient.render(ctx)
     })
 
+    // Draw NPCs (attack animation loop)
+    this.npcs.forEach(npc => {
+      if (npc.visible && npc.attackFrames && npc.attackFrames.length > 0) {
+        const currentImage = npc.attackFrames[npc.currentFrame]
+        if (currentImage && currentImage.complete) {
+          const drawX = Math.round(npc.x)
+          const drawY = Math.round(npc.y)
+          
+          ctx.drawImage(
+            currentImage,
+            drawX,
+            drawY,
+            npc.width,
+            npc.height
+          )
+        }
+      }
+    })
+
     // Background elements will be added later (trees, objects, etc.)
 
     // Draw exploration title (screen space - need to reset transform)
@@ -695,6 +1007,16 @@ export class ExplorationScene extends BaseScene {
     const timeOfDay = this.gameState.worldState.time_of_day
     const title = timeOfDay === 'Night' ? '🌙 Night Exploration' : '☀️ Day Exploration'
     ctx.fillText(title, this.gameEngine.canvas.width / 2, 50)
+
+    // If player is dead, overlay a message
+    if (this.playerDead) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+      ctx.fillRect(0, 0, this.gameEngine.canvas.width, this.gameEngine.canvas.height)
+      ctx.fillStyle = '#ef4444'
+      ctx.font = 'bold 64px monospace'
+      ctx.fillText('YOU DIED', this.gameEngine.canvas.width / 2, this.gameEngine.canvas.height / 2)
+    }
+
     ctx.restore()
 
     // Render buildings
@@ -702,11 +1024,12 @@ export class ExplorationScene extends BaseScene {
       building.render(ctx)
     })
 
-    // Render entities (but skip player since we handle it separately)
-    // We need to manually render other entities, but skip player
+    // Render entities (but skip player and NPCs since we handle them separately)
+    // We need to manually render other entities, but skip player and NPCs
     const playerRef = this.player
     this.entities.forEach(entity => {
-      if (entity !== playerRef && entity.visible && !entity.images) {
+      // Skip player, NPCs (they have attackFrames and are rendered manually), and entities with individual images
+      if (entity !== playerRef && entity.visible && !entity.images && !entity.attackFrames) {
         // Render non-player entities that use sprite sheets
         entity.render(ctx, spriteManager)
       }

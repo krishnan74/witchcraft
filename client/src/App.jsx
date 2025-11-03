@@ -201,6 +201,14 @@ function App({ controller }) {
             }
           }
 
+          // Propagate updated game state to the active exploration scene and refresh background
+          if (explorationSceneRef.current) {
+            explorationSceneRef.current.gameState = updatedState
+            if (typeof explorationSceneRef.current.updateBackgroundImage === 'function') {
+              explorationSceneRef.current.updateBackgroundImage()
+            }
+          }
+
           return updatedState
         })
 
@@ -242,46 +250,15 @@ function App({ controller }) {
         <Route path="/" element={
           <div className="app">
             {/* Wallet Connection */}
-            <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000, maxWidth: '350px' }}>
+            <div style={{ position: 'fixed', top: '20px', left: '1500px', zIndex: 1000, maxWidth: '350px' }}>
               <WalletConnect controller={controller} />
             </div>
 
             {/* Navigation Links */}
-            <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '10px' }}>
-              <Link 
-                to="/dashboard" 
-                style={{ 
-                  padding: '10px 20px', 
-                  backgroundColor: '#4caf50', 
-                  color: 'white', 
-                  textDecoration: 'none', 
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Dashboard
-              </Link>
-              <Link 
-                to="/admin" 
-                style={{ 
-                  padding: '10px 20px', 
-                  backgroundColor: '#d32f2f', 
-                  color: 'white', 
-                  textDecoration: 'none', 
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Admin
-              </Link>
-            </div>
+            
 
             {/* Dojo Integration Test Button */}
-            <div style={{ position: 'fixed', top: '60px', right: '20px', zIndex: 1000 }}>
-              <SpawnPlayerButton />
-            </div>
+           
 
             <div className="game-container">
               <GameCanvas ref={canvasRef} />
