@@ -1514,6 +1514,18 @@ export function useDojoHook(): UseDojoReturn {
               }
             }
           }
+          wcCombatEntityModels {
+            edges {
+              node {
+                id
+                entity_type
+                health
+                attack
+                defense
+                alive
+              }
+            }
+          }
         }
       `;
 
@@ -1538,7 +1550,9 @@ export function useDojoHook(): UseDojoReturn {
         return null;
       }
 
-      console.log('GraphQL result:', result.data);
+      console.log('[TORII GraphQL] Full GraphQL result:', result);
+      console.log('[TORII GraphQL] GraphQL data:', result.data);
+      console.log('[TORII GraphQL] CombatEntityModels:', result.data?.wcCombatEntityModels);
 
       // Filter results by accountAddress on the client side
       // Process Player data
@@ -1624,12 +1638,37 @@ export function useDojoHook(): UseDojoReturn {
         }
       }
 
+      // Process CombatEntity data from GraphQL (fallback if SDK fails)
+      if (result.data?.wcCombatEntityModels?.edges) {
+        console.log('[TORII GraphQL] Processing CombatEntity data from GraphQL...');
+        console.log('[TORII GraphQL] CombatEntity edges:', result.data.wcCombatEntityModels.edges);
+        const combatListFromGraphQL: CombatEntity[] = result.data.wcCombatEntityModels.edges
+          .map((edge: any) => {
+            const node = edge.node;
+            console.log('[TORII GraphQL] Processing combat entity node:', node);
+            return {
+              id: String(node.id || "0"),
+              entity_type: Number(node.entity_type || 0),
+              health: Number(node.health || 0),
+              attack: Number(node.attack || 0),
+              defense: Number(node.defense || 0),
+              alive: Boolean(node.alive !== undefined ? node.alive : true),
+            };
+          })
+          .filter((c: CombatEntity) => c.id !== "0");
+        console.log('[TORII GraphQL] Parsed combat entities from GraphQL:', combatListFromGraphQL);
+        if (combatListFromGraphQL.length > 0) {
+          setCombatEntities(combatListFromGraphQL);
+          console.log('[TORII GraphQL] Set combat entities from GraphQL:', combatListFromGraphQL.length, 'entities');
+        }
+      }
+
       return result.data;
     } catch (error) {
-      console.error('Error fetching data via GraphQL:', error);
+      console.error('[TORII GraphQL] Error fetching data via GraphQL:', error);
       return null;
     }
-  }, []);
+  }, [setCombatEntities]);
 
   // Helper function to process entity data (following dojo-intro pattern)
   const processEntityData = useCallback((data: any[]) => {
@@ -1867,17 +1906,30 @@ export function useDojoHook(): UseDojoReturn {
 
 
         // Fetch all CombatEntities
-        const combatEntitiesList = await sdk.getEntities({
-          query: new ToriiQueryBuilder().withClause(
-            MemberClause("wc-CombatEntity", "alive", "Eq", true).build()
-          ),
-        });
+        console.log('[TORII] Attempting to fetch CombatEntities via SDK...');
+        let combatEntitiesList;
+        try {
+          combatEntitiesList = await sdk.getEntities({
+            query: new ToriiQueryBuilder().withClause(
+              MemberClause("wc-CombatEntity", "alive", "Eq", true).build()
+            ),
+          });
+          console.log('[TORII] SDK getEntities response for CombatEntity:', combatEntitiesList);
+          console.log('[TORII] Raw combatEntitiesList.items:', JSON.stringify(combatEntitiesList.items, null, 2));
+        } catch (error) {
+          console.error('[TORII] Error fetching CombatEntities via SDK:', error);
+          combatEntitiesList = { items: [] };
+        }
 
         const combatList: CombatEntity[] = combatEntitiesList.items
-          .map((entity) => {
+          .map((entity, index) => {
+            console.log(`[TORII] Processing combat entity ${index}:`, entity);
+            console.log(`[TORII] Entity models:`, entity.models);
+            console.log(`[TORII] Entity models?.wc:`, entity.models?.wc);
             const combat = entity.models?.wc?.CombatEntity;
+            console.log(`[TORII] CombatEntity model:`, combat);
             if (combat) {
-              return {
+              const parsed = {
                 id: String(combat.id || "0"),
                 entity_type: Number(combat.entity_type || 0),
                 health: Number(combat.health || 0),
@@ -1885,10 +1937,16 @@ export function useDojoHook(): UseDojoReturn {
                 defense: Number(combat.defense || 0),
                 alive: Boolean(combat.alive || false),
               };
+              console.log(`[TORII] Parsed combat entity:`, parsed);
+              return parsed;
             }
+            console.warn(`[TORII] No CombatEntity model found in entity:`, entity);
             return null;
           })
           .filter((c): c is CombatEntity => c !== null);
+        
+        console.log('[TORII] Final combat entities list:', combatList);
+        console.log('[TORII] Number of combat entities:', combatList.length);
         setCombatEntities(combatList);
 
         // Fetch active MarketListings

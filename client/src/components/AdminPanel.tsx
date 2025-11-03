@@ -20,6 +20,8 @@ export default function AdminPanel() {
     isPending,
     error,
     isSdkReady,
+    combatEntities,
+    refreshData,
   } = useDojoHook();
 
   // Combat Entity State
@@ -30,7 +32,7 @@ export default function AdminPanel() {
   const [entityDefense, setEntityDefense] = useState(5);
 
   // Creature Loot State
-  const [creatureId, setCreatureId] = useState('');
+  const [selectedCreatureId, setSelectedCreatureId] = useState<string>('');
   const [lootGold, setLootGold] = useState(50);
   const [lootItem, setLootItem] = useState<IngredientType>(IngredientType.BatWing);
   const [lootQuantity, setLootQuantity] = useState(1);
@@ -76,6 +78,8 @@ export default function AdminPanel() {
       // ID is generated in Cairo, no need to provide it
       await createCombatEntity(entityType, entityHealth, entityAttack, entityDefense);
       alert(`✅ Combat entity created! ID was auto-generated in Cairo.`);
+      // Refresh data to update combat entities list
+      await refreshData();
       // Clear form after success
       setEntityId('');
       setEntityHealth(100);
@@ -87,15 +91,34 @@ export default function AdminPanel() {
   };
 
   const handleCreateCreatureLoot = async () => {
-    if (!creatureId) {
-      alert('Please enter creature ID');
+    if (!selectedCreatureId) {
+      alert('Please select a creature');
       return;
     }
     try {
-      await createCreatureLoot(creatureId, lootGold, lootItem, lootQuantity);
+      await createCreatureLoot(selectedCreatureId, lootGold, lootItem, lootQuantity);
       alert('Creature loot created!');
+      // Clear form after success
+      setSelectedCreatureId('');
+      setLootGold(50);
+      setLootItem(IngredientType.BatWing);
+      setLootQuantity(1);
     } catch (err: any) {
       alert(`Failed: ${err.message}`);
+    }
+  };
+
+  // Helper function to get entity type name
+  const getEntityTypeName = (type: number): string => {
+    switch (type) {
+      case CombatEntityType.Player:
+        return 'Player';
+      case CombatEntityType.Creature:
+        return 'Creature';
+      case CombatEntityType.Boss:
+        return 'Boss';
+      default:
+        return `Type ${type}`;
     }
   };
 
@@ -225,9 +248,27 @@ export default function AdminPanel() {
       <section style={{ marginBottom: '25px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: 'white' }}>
         <h2>💎 Create Creature Loot</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ gridColumn: '1 / -1', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '4px', marginBottom: '10px', fontSize: '14px' }}>
+            ℹ️ Select an existing Combat Entity from the dropdown. If no entities appear, create one using the "Create Combat Entity" section above.
+          </div>
           <div>
-            <label>Creature ID: </label>
-            <input type="text" value={creatureId} onChange={(e) => setCreatureId(e.target.value)} style={{ width: '100%', padding: '5px' }} />
+            <label>Select Creature: </label>
+            <select 
+              value={selectedCreatureId} 
+              onChange={(e) => setSelectedCreatureId(e.target.value)} 
+              style={{ width: '100%', padding: '5px' }}
+              disabled={combatEntities.length === 0}
+            >
+              <option value="">
+                {combatEntities.length === 0 ? 'No creatures available - Create one first' : '-- Select a creature --'}
+              </option>
+              {combatEntities.map((entity) => (
+                <option key={entity.id} value={entity.id}>
+                  {getEntityTypeName(entity.entity_type)} (ID: {entity.id}) - HP: {entity.health}, ATK: {entity.attack}, DEF: {entity.defense}
+                  {!entity.alive ? ' [DEAD]' : ''}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label>Reward Gold: </label>
@@ -250,7 +291,7 @@ export default function AdminPanel() {
             <input type="number" value={lootQuantity} onChange={(e) => setLootQuantity(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '5px' }} />
           </div>
         </div>
-        <button onClick={handleCreateCreatureLoot} disabled={isPending || !creatureId} style={{ width: '100%', padding: '10px', backgroundColor: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button onClick={handleCreateCreatureLoot} disabled={isPending || !selectedCreatureId || combatEntities.length === 0} style={{ width: '100%', padding: '10px', backgroundColor: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Create Loot
         </button>
       </section>

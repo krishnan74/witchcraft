@@ -49,33 +49,16 @@ pub mod admin_system {
         ) -> felt252 {
             let mut world = self.world_default();
 
-            // Generate unique ID using caller address, block number, and timestamp
-            let caller = starknet::get_caller_address();
-            let block_num = starknet::get_block_number();
-            let timestamp = starknet::get_block_timestamp();
-            
-            // Combine to create unique ID: caller + block + timestamp
-            let caller_felt: felt252 = caller.into();
-            let block_felt: felt252 = block_num.into();
-            let timestamp_felt: felt252 = timestamp.into();
-            let mut entity_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
-
-            // Check if entity already exists (retry if collision)
-            // In Dojo, non-existent models return default values (id = 0)
-            // So if existing.id != 0, it means an entity already exists
+            // Simple incrementing ID starting from 1
+            // Check if entity exists by checking if all fields are default (id matches key but health=0 means not created yet)
+            let mut entity_id: felt252 = 1;
             let mut existing: CombatEntity = world.read_model(entity_id);
-            let mut attempts: u8 = 0;
-            while existing.id != 0 && attempts < 10 {
-                // If collision, add a small increment
-                entity_id = entity_id + (attempts + 1).into();
-                existing = world.read_model(entity_id);
-                attempts += 1;
-            }
             
-            // Final check after retry
-            existing = world.read_model(entity_id);
-            if existing.id != 0 {
-                panic!("Failed to generate unique entity ID after retries!");
+            // Entity exists if health > 0 (non-default value) OR if it's been explicitly created
+            // Since default health is 0, if health is 0 and other fields are default, it doesn't exist
+            while existing.health != 0 || existing.attack != 0 || existing.defense != 0 {
+                entity_id = entity_id + 1;
+                existing = world.read_model(entity_id);
             }
 
             let entity = CombatEntity {
@@ -126,28 +109,14 @@ pub mod admin_system {
         ) -> felt252 {
             let mut world = self.world_default();
 
-            // Generate unique ID
-            let caller = starknet::get_caller_address();
-            let block_num = starknet::get_block_number();
-            let timestamp = starknet::get_block_timestamp();
-            let caller_felt: felt252 = caller.into();
-            let block_felt: felt252 = block_num.into();
-            let timestamp_felt: felt252 = timestamp.into();
-            let mut recipe_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
-
-            // Check if recipe already exists
-            // In Dojo, non-existent models return default values (recipe_id = 0)
+            // Simple incrementing ID starting from 1
+            let mut recipe_id: felt252 = 1;
             let mut existing: CraftRecipe = world.read_model(recipe_id);
-            let mut attempts: u8 = 0;
-            while existing.recipe_id != 0 && attempts < 10 {
-                recipe_id = recipe_id + (attempts + 1).into();
-                existing = world.read_model(recipe_id);
-                attempts += 1;
-            }
             
-            existing = world.read_model(recipe_id);
-            if existing.recipe_id != 0 {
-                panic!("Failed to generate unique recipe ID after retries!");
+            // Entity exists if result_type, difficulty, or base_value are non-default
+            while  existing.difficulty != 0 || existing.base_value != 0 {
+                recipe_id = recipe_id + 1;
+                existing = world.read_model(recipe_id);
             }
 
             let recipe = CraftRecipe {
@@ -223,28 +192,14 @@ pub mod admin_system {
         ) -> felt252 {
             let mut world = self.world_default();
 
-            // Generate unique ID
-            let caller = starknet::get_caller_address();
-            let block_num = starknet::get_block_number();
-            let timestamp = starknet::get_block_timestamp();
-            let caller_felt: felt252 = caller.into();
-            let block_felt: felt252 = block_num.into();
-            let timestamp_felt: felt252 = timestamp.into();
-            let mut recipe_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
-
-            // Check if recipe already exists
-            // In Dojo, non-existent models return default values (recipe_id = 0)
+            // Simple incrementing ID starting from 1
+            let mut recipe_id: felt252 = 1;
             let mut existing: Recipe = world.read_model(recipe_id);
-            let mut attempts: u8 = 0;
-            while existing.recipe_id != 0 && attempts < 10 {
-                recipe_id = recipe_id + (attempts + 1).into();
-                existing = world.read_model(recipe_id);
-                attempts += 1;
-            }
             
-            existing = world.read_model(recipe_id);
-            if existing.recipe_id != 0 {
-                panic!("Failed to generate unique potion recipe ID after retries!");
+            // Entity exists if name, effect, difficulty, base_time, or base_value are non-default
+            while existing.name != 0 || existing.difficulty != 0 || existing.base_time != 0 || existing.base_value != 0 {
+                recipe_id = recipe_id + 1;
+                existing = world.read_model(recipe_id);
             }
 
             let recipe = Recipe {
@@ -294,28 +249,14 @@ pub mod admin_system {
         ) -> felt252 {
             let mut world = self.world_default();
 
-            // Generate unique ID
-            let caller = starknet::get_caller_address();
-            let block_num = starknet::get_block_number();
-            let timestamp = starknet::get_block_timestamp();
-            let caller_felt: felt252 = caller.into();
-            let block_felt: felt252 = block_num.into();
-            let timestamp_felt: felt252 = timestamp.into();
-            let mut customer_id: felt252 = (caller_felt * 1000000000000000000000000) + (block_felt * 10000000000000000) + timestamp_felt;
-
-            // Check if customer already exists
-            // In Dojo, non-existent models return default values (id = 0)
+            // Simple incrementing ID starting from 1
+            let mut customer_id: felt252 = 1;
             let mut existing: Customer = world.read_model(customer_id);
-            let mut attempts: u8 = 0;
-            while existing.id != 0 && attempts < 10 {
-                customer_id = customer_id + (attempts + 1).into();
-                existing = world.read_model(customer_id);
-                attempts += 1;
-            }
             
-            existing = world.read_model(customer_id);
-            if existing.id != 0 {
-                panic!("Failed to generate unique customer ID after retries!");
+            // Entity exists if faction, reputation_req, or preferred_recipe are non-default
+            while  existing.reputation_req != 0 || existing.preferred_recipe != 0 {
+                customer_id = customer_id + 1;
+                existing = world.read_model(customer_id);
             }
 
             let customer = Customer {
