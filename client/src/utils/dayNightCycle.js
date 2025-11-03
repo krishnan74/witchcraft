@@ -1,11 +1,4 @@
-/**
- * Day/Night Cycle System
- * Aligned with Dojo WorldState model
- * 
- * Day: 2 minutes (120 seconds)
- * Night: 1 minute (60 seconds)
- * Shop opens only during night time
- */
+
 
 export const CYCLE_TIMES = {
   DAY_DURATION: 120000,   // 2 minutes in milliseconds
