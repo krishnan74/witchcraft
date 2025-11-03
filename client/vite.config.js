@@ -11,7 +11,18 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    target: 'es2022', // Support top-level await (Chrome 89+, Firefox 89+, Safari 15+)
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        format: 'es',
+        manualChunks: undefined // Let Vite handle chunking
+      }
+    }
+  },
+  esbuild: {
+    target: 'es2022' // Ensure esbuild also targets ES2022 for top-level await
   },
   optimizeDeps: {
     exclude: ['@dojoengine/core']
