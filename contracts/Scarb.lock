@@ -26,9 +26,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "dojo_snf_test"
+version = "1.7.2"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:b965a6a533e6614607eab6f80a538c8737e18c793ab117550b9a412e2eafa35b"
+dependencies = [
+ "dojo",
+ "snforge_std",
+]
+
+[[package]]
+name = "snforge_scarb_plugin"
+version = "0.50.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:8c29e5519362d22f2c802e4e348da846de3898cbaeac19b58aded6a009bf188e"
+
+[[package]]
+name = "snforge_std"
+version = "0.50.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:db3a9de47952c699f8f3ce649b5b01f09c1f9c170f38b3c7a8df8e50a0188e9b"
+dependencies = [
+ "snforge_scarb_plugin",
+]
+
+[[package]]
 name = "witchcraft"
 version = "1.7.2"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
+ "dojo_snf_test",
 ]
