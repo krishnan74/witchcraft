@@ -13,4 +13,5 @@ pub mod systems {
     pub mod resource_regeneration_system;
     pub mod progression_system;
     pub mod zone_system;
+    pub mod admin_system;
 }

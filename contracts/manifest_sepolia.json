@@ -1490,8 +1490,563 @@
   },
   "contracts": [
     {
+      "address": "0x12fca4cad90ba3688ab83c1d9ce530c7208879171e4cd9c69d7e4930be6338",
+      "class_hash": "0x2978313d3c453e85be8ac2b5b289cdad2af2dd37b8bc14f4e81ec732a6b00a2",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "admin_system__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "DojoDeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "AdminSystemImpl",
+          "interface_name": "witchcraft::systems::admin_system::IAdminSystem"
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::CombatEntityType",
+          "variants": [
+            {
+              "name": "Player",
+              "type": "()"
+            },
+            {
+              "name": "Creature",
+              "type": "()"
+            },
+            {
+              "name": "Boss",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::IngredientType",
+          "variants": [
+            {
+              "name": "MandrakeRoot",
+              "type": "()"
+            },
+            {
+              "name": "GraveDust",
+              "type": "()"
+            },
+            {
+              "name": "BatWing",
+              "type": "()"
+            },
+            {
+              "name": "GhostMushroom",
+              "type": "()"
+            },
+            {
+              "name": "WyrmScale",
+              "type": "()"
+            },
+            {
+              "name": "VampireBloom",
+              "type": "()"
+            },
+            {
+              "name": "PumpkinSeed",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::CraftResultType",
+          "variants": [
+            {
+              "name": "Potion",
+              "type": "()"
+            },
+            {
+              "name": "Charm",
+              "type": "()"
+            },
+            {
+              "name": "Tool",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::ZoneType",
+          "variants": [
+            {
+              "name": "Forest",
+              "type": "()"
+            },
+            {
+              "name": "Swamp",
+              "type": "()"
+            },
+            {
+              "name": "Graveyard",
+              "type": "()"
+            },
+            {
+              "name": "CursedVillage",
+              "type": "()"
+            },
+            {
+              "name": "Ruins",
+              "type": "()"
+            },
+            {
+              "name": "MountainPass",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::PotionEffect",
+          "variants": [
+            {
+              "name": "Healing",
+              "type": "()"
+            },
+            {
+              "name": "Rage",
+              "type": "()"
+            },
+            {
+              "name": "Invisibility",
+              "type": "()"
+            },
+            {
+              "name": "FearAura",
+              "type": "()"
+            },
+            {
+              "name": "Speed",
+              "type": "()"
+            },
+            {
+              "name": "FireResistance",
+              "type": "()"
+            },
+            {
+              "name": "Transformation",
+              "type": "()"
+            },
+            {
+              "name": "Curse",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "witchcraft::models::Faction",
+          "variants": [
+            {
+              "name": "Demon",
+              "type": "()"
+            },
+            {
+              "name": "Zombie",
+              "type": "()"
+            },
+            {
+              "name": "Vampire",
+              "type": "()"
+            },
+            {
+              "name": "Ghost",
+              "type": "()"
+            },
+            {
+              "name": "HumanHunter",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "witchcraft::systems::admin_system::IAdminSystem",
+          "items": [
+            {
+              "type": "function",
+              "name": "create_combat_entity",
+              "inputs": [
+                {
+                  "name": "entity_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "entity_type",
+                  "type": "witchcraft::models::CombatEntityType"
+                },
+                {
+                  "name": "health",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "attack",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "defense",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_creature_loot",
+              "inputs": [
+                {
+                  "name": "creature_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "reward_gold",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "reward_item",
+                  "type": "witchcraft::models::IngredientType"
+                },
+                {
+                  "name": "quantity",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_craft_recipe",
+              "inputs": [
+                {
+                  "name": "recipe_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "result_type",
+                  "type": "witchcraft::models::CraftResultType"
+                },
+                {
+                  "name": "difficulty",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "base_value",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "add_craft_ingredient",
+              "inputs": [
+                {
+                  "name": "recipe_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "ingredient_type",
+                  "type": "witchcraft::models::IngredientType"
+                },
+                {
+                  "name": "quantity",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_zone",
+              "inputs": [
+                {
+                  "name": "zone_id",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "zone_type",
+                  "type": "witchcraft::models::ZoneType"
+                },
+                {
+                  "name": "danger_level",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "node_spawn_rate",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_potion_recipe",
+              "inputs": [
+                {
+                  "name": "recipe_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "name",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "effect",
+                  "type": "witchcraft::models::PotionEffect"
+                },
+                {
+                  "name": "difficulty",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "base_time",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "base_value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "add_recipe_ingredient",
+              "inputs": [
+                {
+                  "name": "recipe_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "ingredient_type",
+                  "type": "witchcraft::models::IngredientType"
+                },
+                {
+                  "name": "quantity",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_customer",
+              "inputs": [
+                {
+                  "name": "customer_id",
+                  "type": "core::felt252"
+                },
+                {
+                  "name": "faction",
+                  "type": "witchcraft::models::Faction"
+                },
+                {
+                  "name": "reputation_req",
+                  "type": "core::integer::i32"
+                },
+                {
+                  "name": "preferred_recipe",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "view"
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "witchcraft::systems::admin_system::admin_system::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "wc-admin_system",
+      "selector": "0x40be9187d401d1f001b277a041a69719b51b2a7123d13eb73b003eb9e850f11",
+      "systems": [
+        "create_combat_entity",
+        "create_creature_loot",
+        "create_craft_recipe",
+        "add_craft_ingredient",
+        "create_zone",
+        "create_potion_recipe",
+        "add_recipe_ingredient",
+        "create_customer",
+        "upgrade"
+      ]
+    },
+    {
       "address": "0x2dc255c7d174be317e6564d3c05820208c76d9bda6158a002f51be45f960644",
-      "class_hash": "0x56a77d4d6c604b6ee7dace7cf82858f4a3cfae3057bca190498fd3280a69f20",
+      "class_hash": "0x729b10069cb7ee93acf2e2d910c740ce515997345b93c6a504f85d912df9582",
       "abi": [
         {
           "type": "impl",
@@ -1708,7 +2263,7 @@
     },
     {
       "address": "0x365a0160db3d4603665507197665c6b45d1157c88dd0924f7cf0b776fcf3e59",
-      "class_hash": "0x55267b976e52e25836e2f8e28afef9938469f5a5e8e2f43d2d8344203e4841d",
+      "class_hash": "0x2ff76d735ca159c842decafa660c10cbc6cb289af58332f35980b04d73f3567",
       "abi": [
         {
           "type": "impl",
@@ -2594,7 +3149,7 @@
     },
     {
       "address": "0x6626cc901eb54b34acda1f481ca229b8890289025698a6c6df7998eb5135ed5",
-      "class_hash": "0x59216daeeb46917dc5c43c98b5a18cd54f6c1ae3713dc4c4331dc32274628f9",
+      "class_hash": "0x98912c24693111ec9d02baf9f526e837eb3d6f43670d007587135dc4bbf4f6",
       "abi": [
         {
           "type": "impl",
@@ -3673,7 +4228,7 @@
     },
     {
       "address": "0x4538e992b89bc994b706a61f233b9fc9a0709ce2c65fd0690180d96ede64f11",
-      "class_hash": "0x244f03eb0c35bcc19c0b3f29627fcf207fef0decdf200e47f5f70d3ba25caf5",
+      "class_hash": "0xeda6964fdb649b76871f17ddece1879978d89bcfefc5e6b079c6bc9eb30d7e",
       "abi": [
         {
           "type": "impl",
@@ -3873,7 +4428,7 @@
     },
     {
       "address": "0x7071ccf284756abcd3055aff728363dde551454ec49ec51037ffb1f47903eda",
-      "class_hash": "0x18ec216120d460c9ec857b8ab1fe829ac88dcdacd7937f726d65e8cce4439cc",
+      "class_hash": "0x3a614697c4b93523df6bba14900438111f8e8ce2588fee1e450ba2b78a04439",
       "abi": [
         {
           "type": "impl",

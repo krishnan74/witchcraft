@@ -13,5 +13,20 @@ default = "wc"
 # world_address = ""   # Will be populated after first deployment
 
 [writers]
-"wc" = [ "wc-brewing_system", "wc-forage_system", "wc-movement_system", "wc-node_spawn_system", "wc-spawn_system"]
+"wc" = [ 
+  "wc-brewing_system", 
+  "wc-forage_system", 
+  "wc-movement_system", 
+  "wc-node_spawn_system", 
+  "wc-spawn_system",
+  "wc-sell_system",
+  "wc-combat_system",
+  "wc-crafting_system",
+  "wc-economy_system",
+  "wc-faction_system",
+  "wc-progression_system",
+  "wc-resource_regeneration_system",
+  "wc-zone_system",
+  "wc-admin_system"
+]
 
