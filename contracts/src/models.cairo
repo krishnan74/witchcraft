@@ -148,6 +148,80 @@ pub struct WorldState {
     pub human_alert_level: u8,
 }
 
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct MarketListing {
+    #[key]
+    pub listing_id: felt252,
+    pub item_type: felt252, // could be potion_id or ingredient_type
+    pub price: u128,
+    pub quantity: u16,
+    pub seller: ContractAddress,
+    pub active: bool,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct CombatEntity {
+    #[key]
+    pub id: felt252,
+    pub entity_type: CombatEntityType,
+    pub health: u16,
+    pub attack: u16,
+    pub defense: u16,
+    pub alive: bool,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct CreatureLoot {
+    #[key]
+    pub creature_id: felt252,
+    pub reward_gold: u32,
+    pub reward_item: IngredientType,
+    pub quantity: u16,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct CraftRecipe {
+    #[key]
+    pub recipe_id: felt252,
+    pub result_type: CraftResultType,
+    pub difficulty: u8,
+    pub base_value: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct CraftIngredient {
+    #[key]
+    pub recipe_id: felt252,
+    #[key]
+    pub ingredient_type: IngredientType,
+    pub quantity: u16,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct PlayerProgression {
+    #[key]
+    pub player: ContractAddress,
+    pub level: u16,
+    pub xp: u32,
+    pub next_level_xp: u32,
+}
+
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct Zone {
+    #[key]
+    pub zone_id: u32,
+    pub zone_type: ZoneType,
+    pub danger_level: u8,
+    pub node_spawn_rate: u16,
+}
+
 
 #[derive(Drop, Serde, DojoStore, Default, Introspect, Copy, Debug, PartialEq)]
 pub enum IngredientType {
@@ -219,4 +293,20 @@ pub enum MoonPhase {
     Half,
     Gibbous,
     Full,
+}
+
+#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy, Debug, PartialEq)]
+pub enum CombatEntityType {
+    #[default]
+    Player,
+    Creature,
+    Boss,
+}
+
+#[derive(Drop, Serde, DojoStore, Default, Introspect, Copy)]
+pub enum CraftResultType {
+    #[default]
+    Potion,
+    Charm,
+    Tool,
 }

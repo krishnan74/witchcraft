@@ -1,4 +1,4 @@
-use crate::models::{Player, Position, Direction, ZoneType};
+use crate::models::{Player, Position, Direction, Zone, ZoneType};
 
 #[starknet::interface]
 pub trait IMovementSystem<T> {
@@ -7,7 +7,7 @@ pub trait IMovementSystem<T> {
 
 #[dojo::contract]
 pub mod movement_system {
-    use super::{IMovementSystem, Player, Position, Direction, ZoneType};
+    use super::{IMovementSystem, Player, Position, Direction, Zone, ZoneType};
     use dojo::model::ModelStorage;
     use core::num::traits::SaturatingSub;
 

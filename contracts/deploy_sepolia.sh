@@ -99,8 +99,8 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
     echo "Waiting 10 seconds before retry..."
     sleep 10
   fi
-  
-  if sozo -P sepolia migrate ; then
+
+  if sozo -P sepolia migrate -vvv; then
     SUCCESS=true
     echo -e "${GREEN}✅ Migration succeeded!${NC}"
   else
