@@ -10,68 +10,113 @@ import SpawnPlayerButton from './components/SpawnPlayerButton'
 import WalletConnect from './components/WalletConnect'
 import DashboardPage from './pages/DashboardPage.tsx'
 import AdminPage from './pages/AdminPage.tsx'
-import { startBrew, finishBrew } from './utils/brewingSystem'
 import { initializeCycle, updateCycle, getTimeRemaining } from './utils/dayNightCycle'
 import { generateCustomerOrders } from './utils/shopSystem'
 import { GameEngine } from './engine/GameEngine'
 import { SceneManager } from './engine/SceneManager'
 import { ShopScene } from './scenes/ShopScene'
 import { ExplorationScene } from './scenes/ExplorationScene'
+import { useDojoHook } from './hooks/useDojo.ts'
 import './App.css'
 
 function App({ controller }) {
+  // Get real data and functions from Dojo
+  const {
+    player,
+    position,
+    inventory,
+    ingredientItems,
+    potions,
+    factionReputations,
+    playerProgression,
+    startBrew: dojoStartBrew,
+    finishBrew: dojoFinishBrew,
+    sellPotion: dojoSellPotion,
+    refreshData,
+    isSdkReady,
+    isPending,
+    error: dojoError,
+  } = useDojoHook()
+
   const canvasRef = useRef(null)
   const gameEngineRef = useRef(null)
   const sceneManagerRef = useRef(null)
-  // Game state aligned with Dojo models
+  
+  // Convert factionReputations array to object format for easier access
+  const factionReputationObj = factionReputations.reduce((acc, rep) => {
+    const factionName = ['Demon', 'Zombie', 'Vampire', 'Ghost', 'HumanHunter'][rep.faction] || 'Unknown'
+    acc[factionName] = rep.reputation
+    return acc
+  }, {})
+
+  // Game state aligned with Dojo models - using real data
   const gameStateRef = useRef({
-    // Player model
-    player: {
-      addr: null, // ContractAddress - will be set when connected
-      name: '', // felt252
-      gold: 100, // u128
-      health: 100, // u16
-      stamina: 100, // u16
-      reputation: 0 // i32
+    // Player model (from Dojo)
+    player: player || {
+      addr: null,
+      name: '',
+      gold: BigInt(0),
+      health: 0,
+      stamina: 0,
+      reputation: 0
     },
-    // WorldState model
+    // WorldState model (client-side for now, can be extended with Dojo WorldState if available)
     worldState: {
-      id: 'world_1', // felt252
-      day: 1, // u8
-      time_of_day: 'Day', // TimeOfDay enum - starts in Day
-      moon_phase: 'New', // MoonPhase enum
-      human_alert_level: 0 // u8
+      id: 'world_1',
+      day: 1,
+      time_of_day: 'Day',
+      moon_phase: 'New',
+      human_alert_level: 0
     },
-    // Inventory model
-    inventory: {
-      owner: null, // ContractAddress
-      capacity: 20, // u16
-      count: 0 // u16
+    // Inventory model (from Dojo)
+    inventory: inventory || {
+      owner: null,
+      capacity: 0,
+      count: 0
     },
     // IngredientItem array (from Dojo)
-    ingredientItems: [], // Array of { owner, slot, ingredient_type, quantity }
+    ingredientItems: ingredientItems || [],
     // Potion array (from Dojo)
-    potions: [], // Array of { potion_id, owner, recipe_id, effect, quality, value }
-    // Orders (from Dojo Order model)
-    orders: [], // Array of { order_id, buyer_id, recipe_id, price, deadline_epoch, fulfilled, faction }
+    potions: potions || [],
+    // Orders (client-side generated for now, can be extended with Dojo Order model)
+    orders: [],
     // FactionReputation (from Dojo)
     factionReputation: {
-      Demon: 50, // i32
-      Zombie: 50, // i32
-      Vampire: 50, // i32
-      Ghost: 50, // i32
-      HumanHunter: 0 // i32
+      Demon: factionReputationObj.Demon || 0,
+      Zombie: factionReputationObj.Zombie || 0,
+      Vampire: factionReputationObj.Vampire || 0,
+      Ghost: factionReputationObj.Ghost || 0,
+      HumanHunter: factionReputationObj.HumanHunter || 0
     },
     // Position (from Dojo)
-    position: {
-      entity: null, // ContractAddress
-      x: 640, // u32
-      y: 360, // u32
-      zone: 'Forest' // ZoneType enum
+    position: position || {
+      owner: null,
+      x: 640,
+      y: 360,
+      zone: 'Forest'
     }
   })
   
   const [gameState, setGameState] = useState(gameStateRef.current)
+  
+  // Sync game state when Dojo data changes
+  useEffect(() => {
+    setGameState(prev => ({
+      ...prev,
+      player: player || prev.player,
+      inventory: inventory || prev.inventory,
+      ingredientItems: ingredientItems || prev.ingredientItems,
+      potions: potions || prev.potions,
+      position: position || prev.position,
+      factionReputation: {
+        Demon: factionReputationObj.Demon || prev.factionReputation.Demon,
+        Zombie: factionReputationObj.Zombie || prev.factionReputation.Zombie,
+        Vampire: factionReputationObj.Vampire || prev.factionReputation.Vampire,
+        Ghost: factionReputationObj.Ghost || prev.factionReputation.Ghost,
+        HumanHunter: factionReputationObj.HumanHunter || prev.factionReputation.HumanHunter
+      }
+    }))
+  }, [player, inventory, ingredientItems, potions, position, factionReputations])
   const [showInventory, setShowInventory] = useState(false)
   const [showRecipeBook, setShowRecipeBook] = useState(false)
   const [showCauldron, setShowCauldron] = useState(false)
@@ -271,8 +316,24 @@ function App({ controller }) {
                       ? `Night: ${Math.ceil(timeRemaining / 1000)}s`
                       : `Day: ${Math.ceil(timeRemaining / 1000)}s`}
                   </div>
-                  <div className="stat">Gold: {gameState.player.gold}</div>
+                  <div className="stat">Gold: {typeof gameState.player.gold === 'bigint' ? gameState.player.gold.toString() : gameState.player.gold}</div>
                   <div className="stat">Health: {gameState.player.health}</div>
+                  <div className="stat">Stamina: {gameState.player.stamina || 0}</div>
+                  {dojoError && (
+                    <div className="stat" style={{ color: 'red', fontSize: '12px' }}>
+                      Error: {dojoError.message}
+                    </div>
+                  )}
+                  {isPending && (
+                    <div className="stat" style={{ color: 'yellow', fontSize: '12px' }}>
+                      Processing...
+                    </div>
+                  )}
+                  {!isSdkReady && (
+                    <div className="stat" style={{ color: 'orange', fontSize: '12px' }}>
+                      SDK Loading...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -300,50 +361,46 @@ function App({ controller }) {
               onClose={() => setShowCauldron(false)}
               currentDay={gameState.worldState.day}
               ingredientItems={gameState.ingredientItems}
-              onStartBrew={(recipe) => {
-                // Handle brewing - consume ingredients and create potion
-                // TODO: Replace with Dojo calls when integrated
-                // Dojo: await brewingSystem.start_brew(cauldron_id, recipe_id)
-                
-                // Check and start brewing (matches Dojo start_brew logic)
-                const brewResult = startBrew(recipe, gameState.ingredientItems, 'cauldron_1')
-                
-                if (brewResult.success) {
-                  // Update inventory with consumed ingredients
-                  setGameState(prev => ({
-                    ...prev,
-                    ingredientItems: brewResult.updatedItems,
-                    inventory: {
-                      ...prev.inventory,
-                      count: brewResult.updatedItems.reduce((sum, item) => sum + item.quantity, 0)
-                    }
-                  }))
+              onStartBrew={async (recipe) => {
+                // Use real Dojo brewing function
+                try {
+                  // Get first available cauldron (or use a default one)
+                  const cauldronId = '1' // Default cauldron ID - can be improved to select from available cauldrons
+                  const recipeId = String(recipe.recipe_id || recipe.id || '1')
                   
-                  // Simulate brewing time and create potion
-                  // TODO: In Dojo, this will check block_number >= brewing_until
-                  setTimeout(() => {
-                    // Dojo: await brewingSystem.finish_brew(cauldron_id)
-                    const finishResult = finishBrew(recipe, 1) // cauldronQuality = 1 for now
-                    
-                    if (finishResult.success) {
-                      // Add potion to inventory (matches Dojo potion creation)
-                      setGameState(prev => ({
-                        ...prev,
-                        potions: [...(prev.potions || []), finishResult.potion],
-                        player: {
-                          ...prev.player,
-                          gold: prev.player.gold + finishResult.goldEarned
-                        }
-                      }))
+                  console.log(`Starting brew with cauldron ${cauldronId} and recipe ${recipeId}`)
+                  
+                  // Start brewing via Dojo
+                  await dojoStartBrew(cauldronId, recipeId)
+                  
+                  // Refresh data to get updated inventory
+                  await refreshData()
+                  
+                  // Note: In a real Dojo implementation, you would need to poll or subscribe
+                  // to check when brewing is complete. For now, we'll use a timeout based on recipe base_time
+                  // In production, you'd check the cauldron's brewing_until field against current block number
+                  const brewingTime = recipe.base_time ? Number(recipe.base_time) * 1000 : 5000
+                  
+                  setTimeout(async () => {
+                    try {
+                      // Finish brewing via Dojo
+                      await dojoFinishBrew(cauldronId)
                       
-                      console.log(`✅ Potion brewed: ${finishResult.potion.effect} (Quality: ${finishResult.potion.quality})`)
+                      // Refresh data to get the new potion
+                      await refreshData()
+                      
+                      console.log(`✅ Potion brewing completed!`)
                       
                       // Close cauldron popup after brewing completes
                       setShowCauldron(false)
+                    } catch (error) {
+                      console.error('Error finishing brew:', error)
+                      alert(`Failed to finish brewing: ${error instanceof Error ? error.message : String(error)}`)
                     }
-                  }, recipe.base_time * 1000)
-                } else {
-                  console.warn('Brewing failed:', brewResult.error)
+                  }, brewingTime)
+                } catch (error) {
+                  console.error('Error starting brew:', error)
+                  alert(`Failed to start brewing: ${error instanceof Error ? error.message : String(error)}`)
                 }
               }}
             />
@@ -356,38 +413,35 @@ function App({ controller }) {
               orders={gameState.orders}
               potions={gameState.potions}
               timeRemaining={timeRemaining}
-              onSellPotion={(result) => {
-                // Handle potion sale
-                // TODO: Replace with Dojo calls when integrated
-                // Dojo: await shopSystem.fulfill_order(order_id, potion_id)
-                
-                if (result.success) {
-                  setGameState(prev => {
-                    // Remove sold potion from inventory
-                    const updatedPotions = prev.potions.filter(
-                      p => p.potion_id !== result.potion.potion_id
-                    )
-                    
-                    // Mark order as fulfilled
-                    const updatedOrders = prev.orders.map(order => 
-                      order.order_id === result.orderId
-                        ? { ...order, fulfilled: true }
-                        : order
-                    )
-                    
-                    // Add gold
-                    return {
-                      ...prev,
-                      potions: updatedPotions,
-                      orders: updatedOrders,
-                      player: {
-                        ...prev.player,
-                        gold: prev.player.gold + result.goldEarned
-                      }
-                    }
-                  })
+              onSellPotion={async (result) => {
+                // Use real Dojo sell function
+                try {
+                  const potionId = result.potion.potion_id || result.potion.id || String(result.potion.potionId)
                   
-                  console.log(`💰 Sold potion for ${result.goldEarned} gold!`)
+                  console.log(`Selling potion ${potionId}`)
+                  
+                  // Sell potion via Dojo
+                  await dojoSellPotion(potionId)
+                  
+                  // Refresh data to get updated gold and potion inventory
+                  await refreshData()
+                  
+                  // Update local orders if we have order tracking
+                  if (result.orderId) {
+                    setGameState(prev => ({
+                      ...prev,
+                      orders: prev.orders.map(order => 
+                        order.order_id === result.orderId
+                          ? { ...order, fulfilled: true }
+                          : order
+                      )
+                    }))
+                  }
+                  
+                  console.log(`💰 Potion sold successfully!`)
+                } catch (error) {
+                  console.error('Error selling potion:', error)
+                  alert(`Failed to sell potion: ${error instanceof Error ? error.message : String(error)}`)
                 }
               }}
             />
