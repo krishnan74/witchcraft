@@ -1,11 +1,4 @@
-/**
- * Shop System - Client-side implementation
- * Structured to align with Dojo Customer and Order models for easy integration
- * 
- * In Dojo integration, these will call contract methods:
- * - generate_customer_orders(day)
- * - fulfill_order(order_id, potion_id)
- */
+
 
 import { getRecipeForDay } from '../data/recipes'
 
@@ -21,9 +14,7 @@ export const FACTION_DISPLAY = {
 }
 
 /**
- * Generate random customer orders for all unlocked recipes (up to current day)
- * Aligned with Dojo Customer and Order models
- * 
+
  * @param {number} day - Current day (1-7)
  * @param {number} minOrders - Minimum number of orders per recipe (default: 1)
  * @param {number} maxOrders - Maximum number of orders per recipe (default: 3)
@@ -93,9 +84,7 @@ export function findMatchingPotion(order, potions) {
   )
 }
 
-/**
- * Fulfill an order by selling a potion
- * Aligned with Dojo order fulfillment logic
+
  * 
  * @param {Object} order - Order to fulfill
  * @param {Object} potion - Potion to sell
